@@ -1,0 +1,111 @@
+#include "PlayerFish.h"
+
+USING_NS_CC;
+void PlayerFish::createFish(int fishId) {
+	Size visibleSize = Director::getInstance()->getVisibleSize();
+	Vec2 origin = Director::getInstance()->getVisibleOrigin();
+	
+	this->setPosition(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y);
+
+	SpriteFrameCache* cache = SpriteFrameCache::getInstance();
+	cache->addSpriteFramesWithFile("sprites/sp_main.plist");
+	auto fishSprite = CCSprite::createWithSpriteFrame(cache->getSpriteFrameByName("mf11.png"));
+	//this->getBoundingBox().setRect(this->getPositionX(), this->getPositionY(), fishSprite->getContentSize().width * fScale, fishSprite->getContentSize().height * fScale);
+	auto physicsBody = PhysicsBody::createBox(fishSprite->getContentSize());
+	physicsBody->setDynamic(false);
+	physicsBody->setCategoryBitmask(0x02);    // 0010
+	physicsBody->setCollisionBitmask(0x09);
+	physicsBody->setContactTestBitmask(0xFFFFFFFF);
+	physicsBody->setTag(10);
+
+	this->setPhysicsBody(physicsBody);
+	this->getTexture()->setAliasTexParameters();
+	drawFish(fishId);
+}
+void PlayerFish::drawFish(int fishId) {
+	currentStage = fishId;
+	score = fishId * 10 + 1;
+	Size visibleSize = Director::getInstance()->getVisibleSize();
+	Vec2 origin = Director::getInstance()->getVisibleOrigin();
+	SpriteFrameCache* cache = SpriteFrameCache::getInstance();
+	cache->addSpriteFramesWithFile("sprites/sp_main.plist");
+	auto fishSprite = CCSprite::createWithSpriteFrame(cache->getSpriteFrameByName("mf11.png"));
+	Vector<SpriteFrame*> animFrames(2);
+
+	for (int i = 1; i <= 2; i++) {
+		char str[100] = { 0 };
+		sprintf(str, "mf%i%i.png", fishId, i);
+		auto spr = CCSprite::create(str);
+		auto frame = cache->getSpriteFrameByName(str);
+		animFrames.pushBack(frame);
+	}
+
+	fScale = visibleSize.width / 15 / CCSprite::create("sprites/mf11.png")->getContentSize().width;
+	fishSprite->setName("FSPRITE");
+
+	this->addChild(fishSprite);
+
+	this->setScale(fScale);
+
+	auto animation = Animation::createWithSpriteFrames(animFrames, 0.5f);
+	fishSprite->runAction(RepeatForever::create(Animate::create(animation)));
+}
+
+void PlayerFish::refreshPlayerDirection(int posX) {
+	if (this->getPosition().x > posX) {
+		this->setScaleX(-fScale);
+	}
+	else {
+		this->setScaleX(fScale);
+	}
+}
+
+void PlayerFish::evolve() {
+
+	int stage = std::floor((score - 1) / 10);
+	if (stage > currentStage) {
+		//currentStage = stage;
+		this->removeAllChildrenWithCleanup(true);
+		this->drawFish(stage);
+	}
+}
+
+void PlayerFish::increaseScale() {
+	fScale += 0.1;
+	float scaleX = this->getScaleX();
+	if (scaleX > 0) {
+		scaleX += 0.1;
+	}
+	else {
+		scaleX -= 0.1;
+	}
+	this->setScaleX(scaleX);
+	this->setScaleY(fScale);
+}
+
+PlayerFish* PlayerFish::create(const std::string &path, ssize_t capacity)
+{
+	PlayerFish *fish = new PlayerFish();
+	if (fish && fish->initWithFile(path))
+	{
+		// Set to autorelease
+		fish->autorelease();
+
+		return fish;
+	}
+	CC_SAFE_DELETE(fish);
+	return NULL;
+}
+
+PlayerFish* PlayerFish::create() {
+	return PlayerFish::create("sprites/sp_main.png", 29L);
+}
+
+void PlayerFish::increaseScore(float pts) {
+	score += pts;
+	this->evolve();
+}
+
+int PlayerFish::getScore() {
+	return score;
+}

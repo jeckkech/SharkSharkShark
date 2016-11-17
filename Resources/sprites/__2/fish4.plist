@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+    <dict>
+        <key>frames</key>
+        <dict>
+            <key>Рыбка 4-1.png</key>
+            <dict>
+                <key>frame</key>
+                <string>{{0,0},{30,24}}</string>
+                <key>offset</key>
+                <string>{0,0}</string>
+                <key>rotated</key>
+                <false/>
+                <key>sourceColorRect</key>
+                <string>{{0,0},{30,24}}</string>
+                <key>sourceSize</key>
+                <string>{30,24}</string>
+            </dict>
+            <key>Рыбка 4-2.png</key>
+            <dict>
+                <key>frame</key>
+                <string>{{0,24},{30,24}}</string>
+                <key>offset</key>
+                <string>{0,0}</string>
+                <key>rotated</key>
+                <false/>
+                <key>sourceColorRect</key>
+                <string>{{0,0},{30,24}}</string>
+                <key>sourceSize</key>
+                <string>{30,24}</string>
+            </dict>
+        </dict>
+        <key>metadata</key>
+        <dict>
+            <key>format</key>
+            <integer>2</integer>
+            <key>size</key>
+            <string>{32,64}</string>
+            <key>textureFileName</key>
+            <string>fish4.png</string>
+        </dict>
+    </dict>
+</plist>
