@@ -3,8 +3,12 @@
 #include "Fish.h"
 #include "PlayerFish.h"
 #include "Skeleton.h"
+#include "cocostudio/CocoStudio.h"
+#include "ui/CocosGUI.h"
 
 USING_NS_CC;
+using namespace cocostudio::timeline;
+using namespace cocos2d::ui;
 
 Scene* MainGame::createScene()
 {
@@ -66,24 +70,40 @@ bool MainGame::init()
 
 	parallaxBg->setScale(bgScale2);
 	this->addChild(parallaxBg, 3);
-	/////////////////////////////
-	// 2. add a menu item with "X" image, which is clicked to quit the program
-	//    you may modify it.
 
-	// add a "close" icon to exit the progress. it's an autorelease object
-	auto closeItem = MenuItemImage::create(
-		"CloseNormal.png",
-		"CloseSelected.png",
-		CC_CALLBACK_1(MainGame::menuCloseCallback, this));
-
-	closeItem->setPosition(Vec2(origin.x + visibleSize.width - closeItem->getContentSize().width / 2,
-		origin.y + closeItem->getContentSize().height / 2));
-
-	// create menu, it's an autorelease object
-	auto menu = Menu::create(closeItem, NULL);
-	menu->setPosition(Vec2::ZERO);
-	this->addChild(menu, 1);
+	auto node = CSLoader::createNode("HUDElements.csb");
 	
+	node->setAnchorPoint(Point(0, 0));
+	node->setPosition(origin.x, origin.y);
+	
+	float scaleSizeX = visibleSize.width / node->getContentSize().width;
+	float scaleSizeY = visibleSize.height / node->getContentSize().height;
+
+	node->setContentSize(visibleSize);
+	auto panel = node->getChildByName("HUDElements")->getChildByName("Panel");
+
+	auto bossLifebar = static_cast<CCSprite*>(panel->getChildByName("hb11_12"));
+	bossLifebar->getTexture()->setAliasTexParameters();
+
+	auto exitButton = static_cast<cocos2d::ui::Button*>(panel->getChildByName("exitBtn"));
+
+	CCSprite::create(exitButton->getNormalFile().file)->getTexture()->setAliasTexParameters();
+
+	auto listener = EventListenerTouchOneByOne::create();
+	listener->setSwallowTouches(false);
+	listener->setEnabled(true);
+	
+	exitButton->addTouchEventListener(this, toucheventselector(MainGame::menuCloseCallback));
+
+	panel->setScaleX(visibleSize.width / panel->getContentSize().width);
+	panel->setScaleY(visibleSize.height / panel->getContentSize().height);
+
+	__String *tempScore = __String::createWithFormat("%i", totalScore);
+	scoreLabel = static_cast<cocos2d::ui::Text*>(panel->getChildByName("scoreLabel"));
+	scoreLabel->setString(tempScore->getCString());
+
+	ui::Helper::doLayout(node);
+	this->addChild(node, 5);
 
 	Fish* fish1 = Fish::create();
 	this->addChild(fish1, 2);
@@ -129,38 +149,30 @@ bool MainGame::init()
 	playerFish->setColor(Color3B(0, 225, 0));
 	playerFish->createFish(1);
 	
-	__String *tempScore = __String::createWithFormat("%i", totalScore);
-	scoreLabel = Label::createWithTTF(tempScore->getCString(), "fonts/Gamegirl.ttf", visibleSize.height * 0.05);
-	scoreLabel->setColor(Color3B(225, 0, 0));
-	scoreLabel->setPosition(visibleSize.width / 2 + origin.x, visibleSize.height + origin.y - scoreLabel->getContentSize().height);
-	this->addChild(scoreLabel, 3);
+	playerTouchListener = EventListenerTouchOneByOne::create();
+	playerTouchListener->setSwallowTouches(true);
+	playerTouchListener->onTouchBegan = CC_CALLBACK_2(MainGame::onTouchMove, this);
+	playerTouchListener->onTouchMoved = CC_CALLBACK_2(MainGame::onTouchMove, this);
+	playerTouchListener->onTouchEnded = CC_CALLBACK_2(MainGame::onTouchStop, this);
+	this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(playerTouchListener, this);
 
-	cocos2d::EventListenerTouchOneByOne* touchListener = EventListenerTouchOneByOne::create();
-	touchListener->setSwallowTouches(true);
-	touchListener->onTouchBegan = CC_CALLBACK_2(MainGame::onTouchMove, this);
-	touchListener->onTouchMoved = CC_CALLBACK_2(MainGame::onTouchMove, this);
-	touchListener->onTouchEnded = CC_CALLBACK_2(MainGame::onTouchStop, this);
-	this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(touchListener, this);
-
-	auto contactListener = EventListenerPhysicsContact::create();
-	contactListener->onContactBegin = CC_CALLBACK_1(MainGame::onContactBegin, this);
-	this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(contactListener, this);
+	playerContactListener = EventListenerPhysicsContact::create();
+	playerContactListener->onContactBegin = CC_CALLBACK_1(MainGame::onContactBegin, this);
+	this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(playerContactListener, this);
 	return true;
 }
 
 void MainGame::update(float dt) {
+	auto origin = Director::getInstance()->getVisibleOrigin();
+	auto visibleSize = Director::getInstance()->getVisibleSize();
+	float playerFishPos = 0;
 	
-		auto origin = Director::getInstance()->getVisibleOrigin();
-		auto visibleSize = Director::getInstance()->getVisibleSize();
-		float playerFishPos = 0;
+	playerFishPos += playerFish == NULL ? 0 : playerFish->getPositionX();
 	
-		playerFishPos += playerFish == NULL ? 0 : playerFish->getPositionX();
+	float bgMargin = visibleSize.width / 2 - playerFishPos + origin.x;
 	
-		float bgMargin = visibleSize.width / 2 - playerFishPos + origin.x;
-	
-		parallaxBg->setPositionX(origin.x + bgMargin/2);
-		parallaxBg2->setPositionX(origin.x + bgMargin / 5);
-	
+	parallaxBg->setPositionX(origin.x + bgMargin/2);
+	parallaxBg2->setPositionX(origin.x + bgMargin / 5);
 }
 
 bool MainGame::onTouchMove(cocos2d::Touch *touch, cocos2d::Event *event) {
@@ -193,7 +205,8 @@ bool MainGame::onContactBegin(cocos2d::PhysicsContact &contact) {
 			else if (contact.getShapeB()->getCollisionBitmask() == 0x09) {
 				this->unscheduleUpdate();
 				scoreLabel->setString("GAME OVER");
-				this->getEventDispatcher()->removeAllEventListeners();
+				this->getEventDispatcher()->removeEventListener(playerTouchListener);
+				this->getEventDispatcher()->removeEventListener(playerContactListener);
 				userCollided = true;
 			}
 			if (contact.getShapeA()->getCollisionBitmask() != 0x09) {
@@ -214,7 +227,8 @@ bool MainGame::onContactBegin(cocos2d::PhysicsContact &contact) {
 			else if (contact.getShapeA()->getCollisionBitmask() == 0x09) {
 				this->unscheduleUpdate();
 				scoreLabel->setString("GAME OVER");
-				this->getEventDispatcher()->removeAllEventListeners();
+				this->getEventDispatcher()->removeEventListener(playerTouchListener);
+				this->getEventDispatcher()->removeEventListener(playerContactListener);
 				userCollided = true;
 			}
 			if (contact.getShapeB()->getCollisionBitmask() != 0x09) {

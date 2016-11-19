@@ -4,6 +4,7 @@
 #include "cocos2d.h"
 #include "Fish.h"
 #include "PlayerFish.h"
+#include "ui/CocosGUI.h"
 
 class MainGame : public cocos2d::Layer
 {
@@ -22,11 +23,14 @@ private:
 		sceneWorld = world;
 	};
 	cocos2d::PhysicsWorld *sceneWorld;
+	
 	int totalScore = 0;
-	cocos2d::Label *scoreLabel;
+	cocos2d::ui::Text *scoreLabel;
 	cocos2d::Sprite *parallaxBg;
 	cocos2d::Sprite *parallaxBg2;
 	void setScore(int points);
+	cocos2d::EventListenerTouchOneByOne* playerTouchListener;
+	cocos2d::EventListenerPhysicsContact* playerContactListener;
 	bool onContactBegin(cocos2d::PhysicsContact &contact);
 	bool onTouchMove(cocos2d::Touch *touch, cocos2d::Event *event);
 	bool onTouchStop(cocos2d::Touch *touch, cocos2d::Event *event);
