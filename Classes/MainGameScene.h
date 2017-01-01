@@ -34,6 +34,7 @@ private:
 	bool hwStage2 = false;
 	bool stage2 = false;
 	bool gameOver = false;
+	bool isInCountdown = false;
 	int topStage = 3;
 
 	cocos2d::ui::Text *scoreLabel;

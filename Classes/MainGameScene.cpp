@@ -53,11 +53,11 @@ bool MainGame::init()
 	edgeNode->setPhysicsBody(edgeBody);
 	this->addChild(edgeNode);
 
-	auto background = CCSprite::create("bg1.png");
+	/*auto background = CCSprite::create("bg1.png");
 	background->setAnchorPoint(Point(0, 0));
 	background->setPosition(Point(origin.x, origin.y));
 	background->getTexture()->setAliasTexParameters();
-
+	*/
 	parallaxBg2 = CCSprite::create("bg2.png");
 	parallaxBg2->setAnchorPoint(Point(0, 0));
 	parallaxBg2->setPosition(Point(origin.x, origin.y));
@@ -68,10 +68,10 @@ bool MainGame::init()
 	parallaxBg->setPosition(Point(origin.x, origin.y));
 	parallaxBg->getTexture()->setAliasTexParameters();
 
-	float bgScale = visibleSize.height / background->getContentSize().height;
+	//float bgScale = visibleSize.height / background->getContentSize().height;
 	float bgScale2 = visibleSize.width / parallaxBg2->getContentSize().width;
-	background->setScale(bgScale);
-	this->addChild(background, 1);
+	//background->setScale(bgScale);
+	//this->addChild(background, 1);
 
 	parallaxBg2->setScale(bgScale2);
 	this->addChild(parallaxBg2, 2);
@@ -84,12 +84,23 @@ bool MainGame::init()
 	node->setAnchorPoint(Point(0, 0));
 	node->setPosition(origin.x, origin.y);
 	node->setName("HUDElements");
-	float scaleSizeX = visibleSize.width / node->getContentSize().width;
-	float scaleSizeY = visibleSize.height / node->getContentSize().height;
+
 
 	node->setContentSize(visibleSize);
 	auto panel = node->getChildByName("HUDElements")->getChildByName("hudPanel");
 	Sprite::create("res/lifebar.png")->getTexture()->setAliasTexParameters();
+
+	auto background = CSLoader::createNode("res/background.csb");
+	auto bgNode = background->getChildByName("background");
+	background->setAnchorPoint(Point(0, 0));
+	background->setPosition(origin.x, origin.y);
+	background->setContentSize(visibleSize);
+	bgNode->setScaleX(visibleSize.width / bgNode->getContentSize().width);
+	bgNode->setScaleY(visibleSize.height / bgNode->getContentSize().height);
+	cocostudio::timeline::ActionTimeline* pActionTimeline = CSLoader::createTimeline("res/background.csb");
+	pActionTimeline->gotoFrameAndPlay(0);
+	bgNode->runAction(pActionTimeline);
+	this->addChild(background, 0);
 
 	auto exitButton = static_cast<cocos2d::ui::Button*>(panel->getChildByName("hudBlockPanel")->getChildByName("exitBtn"));
 
@@ -111,21 +122,6 @@ bool MainGame::init()
 
 	ui::Helper::doLayout(node);
 	this->addChild(node, 5);
-	/*Bubble* bubble = Bubble::create("sprites/bbl11.png");
-	this->addChild(bubble, 1);
-	bubble->run(Vec2(origin.x + visibleSize.width / 2, origin.y));
-	/*Cancer* cancer2 = Cancer::create();
-	this->addChild(cancer2, 2);
-	cancer2->drawFish(1);
-	*/
-	//fishList.push_front(fish5);
-	/*lifebarInitialize();
-	hwStage1 = true;
-
-	Shark* shark = Shark::create();
-	this->addChild(shark, 2);
-	shark->drawFish();
-	*/
 
 	this->scheduleUpdate();
 	
@@ -134,8 +130,6 @@ bool MainGame::init()
 	playerFish->setColor(Color3B(0, 225, 0));
 	playerFish->createFish(1);
 	
-	
-
 	playerContactListener = EventListenerPhysicsContact::create();
 	playerContactListener->onContactBegin = CC_CALLBACK_1(MainGame::onContactBegin, this);
 	this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(playerContactListener, this);
@@ -156,7 +150,7 @@ void MainGame::lifebarInitialize() {
 void MainGame::onEnterTransitionDidFinish() {
 	Layer::onEnterTransitionDidFinish();
 		//COUNTDOWN
-
+		isInCountdown = true;
 		auto countdownPanel = this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel")->getChildByName("countdown");
 		auto countdownLabel = static_cast<cocos2d::ui::Text*>(countdownPanel->getChildByName("countdownLabel"));
 		DelayTime *pause = DelayTime::create(1.0);
@@ -175,6 +169,7 @@ void MainGame::onEnterTransitionDidFinish() {
 		}), DelayTime::create(2.0),
 		CallFunc::create([this, countdownPanel]() {
 		countdownPanel->setVisible(false);
+		isInCountdown = false;
 		}),nullptr));
 }
 
@@ -417,6 +412,7 @@ void MainGame::setScore(int points) {
 void MainGame::menuCloseCallback(Ref* pSender)
 {
 	gameOverLabel->setVisible(false);
+	this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel")->getChildByName("countdown")->setVisible(false);
 	auto prompt = this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel")->getChildByName("exitPrompt");
 	prompt->setVisible(true);
 	Director::getInstance()->pause();
@@ -439,6 +435,9 @@ void MainGame::resume(Ref* pSender) {
 	Director::getInstance()->resume();
 	if (gameOver) {
 		gameOverLabel->setVisible(true);
+	}
+	if (isInCountdown) {
+		this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel")->getChildByName("countdown")->setVisible(true);
 	}
 }
 

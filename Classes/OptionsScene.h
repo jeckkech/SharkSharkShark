@@ -13,8 +13,11 @@ public:
 
 	// a selector callback
 	void backCallback(cocos2d::Ref* pSender);
+	void scrollCallback(Ref* pSender, cocos2d::ui::ScrollView::EventType type);
 	// implement the "static create()" method manually
 	CREATE_FUNC(Options);
+private: 
+	float scrollBarPositionInitial;
 
 };
 

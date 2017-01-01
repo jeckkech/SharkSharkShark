@@ -41,17 +41,19 @@ bool Options::init()
 	auto backButton = static_cast<cocos2d::ui::Button*>(panel->getChildByName("backBtn"));
 
 	auto scrollView = static_cast<cocos2d::ui::ScrollView*>(panel->getChildByName("scrollGallery"));
-	
-
+	scrollBarPositionInitial = scrollView->getScrollBarPositionFromCornerForHorizontal().x;
 
 	backButton->addTouchEventListener(this, toucheventselector(Options::backCallback));
 
 	node->setAnchorPoint(Point(0, 0));
 	node->setPosition(origin.x, origin.y);
 	node->setContentSize(visibleSize);
+	node->setName("OptionsPage");
 
 	ui::Helper::doLayout(node);
 	this->addChild(node, 2);
+	scrollView->addEventListener(CC_CALLBACK_2(Options::scrollCallback, this));
+
 	return true;
 }
 
@@ -59,4 +61,28 @@ void Options::backCallback(Ref* pSender)
 {
 	auto scene = MainMenu::createScene();
 	Director::getInstance()->replaceScene(TransitionFadeDown::create(0.5, scene));
+}
+
+void Options::scrollCallback(Ref* pSender, ScrollView::EventType eventType){
+	/*
+	auto scrollView = static_cast<cocos2d::ui::ScrollView*>(this->getChildByName("OptionsPage")->getChildByName("optionsPage")->getChildByName("optionsPanel")->getChildByName("scrollGallery"));
+	float scrollBarWidth = scrollView->getScrollBarWidth();
+	float scrollBarPosition = scrollView->getScrollBarPositionFromCornerForHorizontal().x;
+	float pageNumber = scrollBarPosition / 570;
+	CCLOG("EVENTTYPE: %i", eventType);
+	scrollView->setInertiaScrollEnabled(false);
+	
+	if(scrollBarPosition < scrollBarPositionInitial) {
+		scrollView->stopAutoScroll();
+		scrollView->stopAllActions();
+		float neededPosition = (scrollBarPosition / (scrollBarWidth - 570)) * 100;
+		scrollBarPositionInitial = neededPosition / 100 * 570;
+		scrollView->scrollToPercentHorizontal(neededPosition, 1.0, true);
+	} else {
+		scrollView->stopAutoScroll();
+		scrollView->stopAllActions();
+		float neededPosition = (scrollBarPosition / (scrollBarWidth + 570)) * 100;
+		scrollBarPositionInitial = neededPosition / 100 * 570;
+		scrollView->scrollToPercentHorizontal(neededPosition, 1.0, true);
+	}*/
 }

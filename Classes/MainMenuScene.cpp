@@ -37,7 +37,7 @@ bool MainMenu::init()
 	auto panel = node->getChildByName("mainMenu")->getChildByName("mainMenuPanel");
 
 	auto startButton = static_cast<Button*>(panel->getChildByName("startBtn"));
-	auto optionsButton = static_cast<Button*>(panel->getChildByName("optionsBtn"));
+	auto galleryButton = static_cast<Button*>(panel->getChildByName("galleryBtn"));
 	auto exitButton = static_cast<Button*>(panel->getChildByName("exitBtn"));
 
 	auto muteCheckbox = static_cast<CheckBox*>(panel->getChildByName("muteCheckbox"));
@@ -46,13 +46,13 @@ bool MainMenu::init()
 		muteCheckbox->setSelected(true);
 	}
 	CCSprite::create(startButton->getNormalFile().file)->getTexture()->setAliasTexParameters();
-	CCSprite::create(optionsButton->getNormalFile().file)->getTexture()->setAliasTexParameters();
+	CCSprite::create(galleryButton->getNormalFile().file)->getTexture()->setAliasTexParameters();
 	CCSprite::create(exitButton->getNormalFile().file)->getTexture()->setAliasTexParameters();
 
 	static_cast<Sprite*>(panel->getChildByName("background"))->getTexture()->setAliasTexParameters();
 
 	startButton->addTouchEventListener(this, toucheventselector(MainMenu::startCallback));
-	optionsButton->addTouchEventListener(this, toucheventselector(MainMenu::optionsCallback));
+	galleryButton->addTouchEventListener(this, toucheventselector(MainMenu::galleryCallback));
 	exitButton->addTouchEventListener(this, toucheventselector(MainMenu::exitCallback));
 
 	muteCheckbox->addEventListener(CC_CALLBACK_2(MainMenu::muteCallback, this));
@@ -65,7 +65,7 @@ bool MainMenu::init()
 	node->setContentSize(visibleSize);
 
 	ui::Helper::doLayout(node);
-	this->addChild(node, 2);
+	this->addChild(node, 10);
 	return true;
 }
 
@@ -83,7 +83,7 @@ void MainMenu::startCallback(Ref* pSender)
 	Director::getInstance()->replaceScene(TransitionFadeBL::create(1.0, scene));
 }
 
-void MainMenu::optionsCallback(Ref* pSender)
+void MainMenu::galleryCallback(Ref* pSender)
 {
 	auto scene = Options::createScene();
 	Director::getInstance()->replaceScene(TransitionFadeDown::create(0.5, scene));

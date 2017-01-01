@@ -14,7 +14,7 @@ public:
 	// a selector callback
 	void exitCallback(cocos2d::Ref* pSender);
 	void startCallback(cocos2d::Ref* pSender);
-	void optionsCallback(cocos2d::Ref* pSender);
+	void galleryCallback(cocos2d::Ref* pSender);
 	void muteCallback(Ref* pSender, cocos2d::ui::CheckBox::EventType type);
 	// implement the "static create()" method manually
 	CREATE_FUNC(MainMenu);
