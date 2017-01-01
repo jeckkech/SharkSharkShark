@@ -16,8 +16,14 @@ LOCAL_SRC_FILES := hellocpp/main.cpp \
                    ../../Classes/MainGameScene.cpp	\
 				   ../../Classes/AbstractFish.cpp \
 				   ../../Classes/Fish.cpp \
+				   ../../Classes/Cancer.cpp \
 				   ../../Classes/PlayerFish.cpp \
-				   ../../Classes/Skeleton.cpp 
+				   ../../Classes/Skeleton.cpp \
+				   ../../Classes/JellyFish.cpp \
+				   ../../Classes/SeaHorse.cpp \
+				   ../../Classes/Shark.cpp \
+				   ../../Classes/MainMenuScene.cpp \
+				   ../../Classes/OptionsScene.cpp
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/../../Classes
 

@@ -1,32 +1,32 @@
-#include "Fish.h"
+#include "SeaHorse.h"
 #include "Skeleton.h"
 
 USING_NS_CC;
 
-void Fish::run() {
-	//CCLOG("RUNNING ACTIONS: %i", Director::getInstance()->getActionManager()->getNumberOfRunningActionsInTarget(this));
-	
+void SeaHorse::run() {
 	if (Director::getInstance()->getActionManager()->getNumberOfRunningActionsInTarget(this) == 1) {
 		auto visibleSize = Director::getInstance()->getVisibleSize();
 		Vec2 origin = Director::getInstance()->getVisibleOrigin();
 		int positionX = cocos2d::RandomHelper::random_int(static_cast<int>(origin.x),
-			static_cast<int>(visibleSize.width+origin.x));
-		int positionY = cocos2d::RandomHelper::random_int(static_cast<int>(origin.y), static_cast<int>(visibleSize.height+origin.y));
+			static_cast<int>(visibleSize.width + origin.x));
+		int positionY = cocos2d::RandomHelper::random_int(static_cast<int>(origin.y), static_cast<int>(visibleSize.height + origin.y));
 		//CCLOG("LOGGED UPDATE POSITION CALL x:%i y:%i", positionX, positionY);
 		if (this->getPositionX() > positionX) {
-			this->setScaleX(-fScale);
-		}
-		else {
 			this->setScaleX(fScale);
 		}
+		else {
+			this->setScaleX(-fScale);
+		}
 		this->setScaleY(fScale);
-		float swimTime = cocos2d::RandomHelper::random_real(0.075, 0.035);
+		float swimTime = cocos2d::RandomHelper::random_real(0.035, 0.001);
 		auto action = MoveTo::create(swimTime * visibleSize.height, Point(positionX, positionY));
 		this->runAction(action);
 	}
 }
 
-void Fish::kill(bool withoutSkeleton) {
+
+
+void SeaHorse::kill(bool withoutSkeleton) {
 	this->stopAllActions();
 	this->removeAllChildrenWithCleanup(true);
 	this->getPhysicsBody()->setEnabled(false);
@@ -49,19 +49,17 @@ void Fish::kill(bool withoutSkeleton) {
 
 	this->addChild(klSprite);
 	klSprite->runAction(Sequence::create(Animate::create(animation), CallFunc::create([this, withoutSkeleton]() {
-		if(!withoutSkeleton){
-			char skname[20] = { 0 };
-			sprintf(skname, "sprites/sk%i.png", currentStage);
-			Skeleton* skeleton = Skeleton::create(skname);
+		if (!withoutSkeleton) {
+			Skeleton* skeleton = Skeleton::create("sprites/sk6.png");
 			this->getParent()->addChild(skeleton, 2);
+			this->getPhysicsBody()->setCollisionBitmask(0x01);
 			skeleton->run(this->getPosition(), this->getScaleX(), this->getScaleY());
 		}
 		this->removeFromParentAndCleanup(true);
 	}), nullptr));
 }
 
-void Fish::drawFish(int fishId) {
-	
+void SeaHorse::drawFish(int fishId) {
 	score = fishId * 10;
 	currentStage = fishId;
 	Size visibleSize = Director::getInstance()->getVisibleSize();
@@ -73,9 +71,9 @@ void Fish::drawFish(int fishId) {
 
 	for (int i = 1; i <= 2; i++) {
 		char str[100] = { 0 };
-		sprintf(str, "f%i%i.png", fishId, i);
+		sprintf(str, "sh%i%i.png", fishId, i);
 		auto spr = CCSprite::create(str);
-		
+
 		auto frame = cache->getSpriteFrameByName(str);
 		animFrames.pushBack(frame);
 	}
@@ -83,36 +81,35 @@ void Fish::drawFish(int fishId) {
 	fScale = visibleSize.width / 15 / CCSprite::create("sprites/f11.png")->getContentSize().width;
 
 	this->addChild(fishSprite);
-	float positionX;
-	float positionXNeg = cocos2d::random(origin.x - visibleSize.width * 0.3f, origin.x);
-	float positionXPos = cocos2d::random(origin.x + visibleSize.width, origin.x + visibleSize.width * 1.3f);
-	float dirSwitcher = cocos2d::rand_minus1_1();
-	if (dirSwitcher > 0) {
+
+	int positionX;
+	int positionXNeg = cocos2d::RandomHelper::random_int(static_cast<int>(origin.x - visibleSize.width / 3),
+		static_cast<int>(origin.x));
+	int positionXPos = cocos2d::RandomHelper::random_int(static_cast<int>(origin.x + visibleSize.width),
+		static_cast<int>(origin.x + visibleSize.width + visibleSize.width / 3));
+	int dirSwitcher = cocos2d::RandomHelper::random_int(static_cast<int>(0), static_cast<int>(1));
+	if (dirSwitcher < 0.5) {
 		positionX = positionXNeg;
 	}
 	else {
 		positionX = positionXPos;
 	}
-	float positionY = cocos2d::random(origin.y, visibleSize.height);
-	this->setScale(fScale);
-	//this->setPosition(Point(positionX, positionY));
 
+	int positionY = cocos2d::RandomHelper::random_int(static_cast<int>(origin.y), static_cast<int>(visibleSize.height + origin.y));
+
+	this->setScale(fScale);
+	this->setPosition(positionX, positionY);
 	auto physicsBody = PhysicsBody::createBox(fishSprite->getContentSize());
 	physicsBody->setDynamic(false);
-	physicsBody->setCategoryBitmask(0x02);  
-	physicsBody->setCollisionBitmask(0x01);
+	physicsBody->setCategoryBitmask(0x02);
+	physicsBody->setCollisionBitmask(0x08);
 	physicsBody->setContactTestBitmask(0xFFFFFFFF);
 	physicsBody->setTag(10);
 
 	this->setPhysicsBody(physicsBody);
-	
-	this->runAction(Sequence::create(
-		CallFunc::create([this, positionX, positionY]() {
-		this->setPosition(Point(positionX, positionY));
-	}), nullptr));
 
 	this->runAction(RepeatForever::create(Sequence::create(
-		CallFuncN::create(std::bind(&Fish::run, this)),
+		CallFuncN::create(std::bind(&SeaHorse::run, this)),
 		nullptr)));
 
 	auto animation = Animation::createWithSpriteFrames(animFrames, 0.5f);
@@ -120,52 +117,43 @@ void Fish::drawFish(int fishId) {
 	this->getTexture()->setAliasTexParameters();
 }
 
-void Fish::evolve() {
-	int stage = std::floor(score / 10);
-	CCLOG("STAGE: %i CUR STAGE: %i", stage, currentStage);
-	if (stage > currentStage) {
-		//currentStage = stage;
-		this->removeAllChildrenWithCleanup(true);
-		this->drawFish(stage);
+void SeaHorse::increaseScale() {
+	fScale += 0.05;
+	float scaleX = this->getScaleX();
+	if (scaleX > 0) {
+		scaleX += 0.05;
 	}
+	else {
+		scaleX -= 0.05;
+	}
+	this->setScaleX(scaleX);
+	this->setScaleY(fScale);
+
 }
 
-void Fish::increaseScale() {
-	if(score<=6+currentStage*10){
-		fScale += 0.05;
-		float scaleX = this->getScaleX();
-		if (scaleX > 0) {
-			scaleX += 0.05;
-		} else {
-			scaleX -= 0.05;
-		}
-		this->setScaleX(scaleX);
-		this->setScaleY(fScale);
-	}
-}
-
-Fish* Fish::create(const std::string &path, ssize_t capacity) 
+SeaHorse* SeaHorse::create(const std::string &path, ssize_t capacity)
 {
-	Fish *fish = new Fish();
+	SeaHorse *fish = new SeaHorse();
 	if (fish && fish->initWithFile(path))
 	{
 		// Set to autorelease
 		fish->autorelease();
+
 		return fish;
 	}
 	CC_SAFE_DELETE(fish);
 	return NULL;
 }
 
-Fish* Fish::create() {
-	return Fish::create("sprites/sp_main.png", 29L);
+SeaHorse* SeaHorse::create() {
+	return SeaHorse::create("sprites/sp_main.png", 29L);
 }
 
-void Fish::increaseScore(float pts) {
-	score+=pts;
+void SeaHorse::increaseScore(float pts) {
+	score += pts;
 	//this->evolve();
 }
 
-int Fish::getScore() {
+int SeaHorse::getScore() {
 	return score;
 }

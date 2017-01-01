@@ -18,6 +18,7 @@ private:
 	float fScale;
 	float score = 0.0;
 	int currentStage;
+	int direction = 0;
 	void evolve();
 
 };

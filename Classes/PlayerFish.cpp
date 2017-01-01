@@ -46,6 +46,12 @@ void PlayerFish::drawFish(int fishId) {
 	this->addChild(fishSprite);
 
 	this->setScale(fScale);
+	if (direction == 1) {
+		this->setScaleX(-fScale);
+	}
+	else {
+		this->setScaleX(fScale);
+	}
 
 	auto animation = Animation::createWithSpriteFrames(animFrames, 0.5f);
 	fishSprite->runAction(RepeatForever::create(Animate::create(animation)));
@@ -53,9 +59,11 @@ void PlayerFish::drawFish(int fishId) {
 
 void PlayerFish::refreshPlayerDirection(int posX) {
 	if (this->getPosition().x > posX) {
+		direction = 1;
 		this->setScaleX(-fScale);
 	}
 	else {
+		direction = 0;
 		this->setScaleX(fScale);
 	}
 }
@@ -67,6 +75,8 @@ void PlayerFish::evolve() {
 		//currentStage = stage;
 		this->removeAllChildrenWithCleanup(true);
 		this->drawFish(stage);
+		ActionInterval *blink = CCBlink::create(2, 10);
+		this->runAction(blink);
 	}
 }
 
@@ -79,7 +89,12 @@ void PlayerFish::increaseScale() {
 	else {
 		scaleX -= 0.1;
 	}
-	this->setScaleX(scaleX);
+	if(direction = 1){
+		this->setScaleX(-scaleX);
+	}
+	else {
+		this->setScale(scaleX);
+	}
 	this->setScaleY(fScale);
 }
 

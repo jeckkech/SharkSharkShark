@@ -37,6 +37,7 @@ void Skeleton::run(Vec2 position, float scaleX, float scaleY) {
 
 void Skeleton::destroy() {
 	this->setOpacity(0);
+	this->getPhysicsBody()->setCollisionBitmask(0x07);
 	Size visibleSize = Director::getInstance()->getVisibleSize();
 	Vec2 origin = Director::getInstance()->getVisibleOrigin();
 	SpriteFrameCache* cache = SpriteFrameCache::getInstance();
