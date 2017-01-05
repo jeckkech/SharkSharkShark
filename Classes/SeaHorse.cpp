@@ -18,8 +18,10 @@ void SeaHorse::run() {
 			this->setScaleX(-fScale);
 		}
 		this->setScaleY(fScale);
-		float swimTime = cocos2d::RandomHelper::random_real(0.035, 0.001);
-		auto action = MoveTo::create(swimTime * visibleSize.height, Point(positionX, positionY));
+
+		Point moveToPoint = Point(positionX, positionY);
+		float distance = this->getPosition().getDistance(moveToPoint);
+		auto action = MoveTo::create(distance/50, moveToPoint);
 		this->runAction(action);
 	}
 }

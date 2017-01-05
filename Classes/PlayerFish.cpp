@@ -32,9 +32,14 @@ void PlayerFish::drawFish(int fishId) {
 	auto fishSprite = CCSprite::createWithSpriteFrame(cache->getSpriteFrameByName("mf11.png"));
 	Vector<SpriteFrame*> animFrames(2);
 
+	auto fnameStr = "mf%i%i.png";
+	if (currentStage == 6 && cocos2d::rand_minus1_1() > 0) {
+		fnameStr = "mf_%i%i.png";
+		UserDefault::getInstance()->setIntegerForKey("playerStageFinal", 1);
+	}
 	for (int i = 1; i <= 2; i++) {
 		char str[100] = { 0 };
-		sprintf(str, "mf%i%i.png", fishId, i);
+		sprintf(str, fnameStr, fishId, i);
 		auto spr = CCSprite::create(str);
 		auto frame = cache->getSpriteFrameByName(str);
 		animFrames.pushBack(frame);
@@ -71,12 +76,13 @@ void PlayerFish::refreshPlayerDirection(int posX) {
 void PlayerFish::evolve() {
 
 	int stage = std::floor((score - 1) / 10);
-	if (stage > currentStage) {
+	if (stage > currentStage && stage <= 6) {
 		//currentStage = stage;
 		this->removeAllChildrenWithCleanup(true);
 		this->drawFish(stage);
 		ActionInterval *blink = CCBlink::create(2, 10);
 		this->runAction(blink);
+		UserDefault::getInstance()->setIntegerForKey("playerStage", stage);
 	}
 }
 

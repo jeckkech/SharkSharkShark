@@ -11,12 +11,16 @@ public:
 	void drawFish();
 	void increaseScore(float pts);
 	void increaseScale();
+	void decreaseHealth();
+	void kill();
+	int getHealth();
 	int getScore();
 private:
 	void run();
 	float fScale;
 	float score = 0.0;
 	float initialY = 0.0;
+	int health = 10;
 
 };
 

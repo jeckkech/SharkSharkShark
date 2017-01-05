@@ -1,4 +1,5 @@
 #include "Shark.h"
+#include "MainGameScene.h"
 
 USING_NS_CC;
 
@@ -7,12 +8,24 @@ void Shark::run() {
 	if (Director::getInstance()->getActionManager()->getNumberOfRunningActionsInTarget(this) == 1) {
 		auto visibleSize = Director::getInstance()->getVisibleSize();
 		Vec2 origin = Director::getInstance()->getVisibleOrigin();
-		int positionX = cocos2d::RandomHelper::random_int(static_cast<int>(origin.x - visibleSize.width),
-			static_cast<int>(visibleSize.width*2 + origin.x));
-		int positionY = cocos2d::RandomHelper::random_int(static_cast<int>(origin.y), static_cast<int>(visibleSize.height + origin.y));
-		//CCLOG("LOGGED UPDATE POSITION CALL x:%i y:%i", positionX, positionY);
 		Size fSpriteSize = this->getChildByName("SHARKSPR")->getContentSize();
-		if (this->getPositionX() > positionX) {
+
+		Point swimPoint;
+		if (cocos2d::rand_minus1_1() > 0) {
+			auto player = this->getParent()->getChildByName("playerNode");
+			if (player != NULL) {
+				swimPoint = player->getPosition();
+			}
+		}
+		else {
+			int positionX = cocos2d::RandomHelper::random_int(static_cast<int>(origin.x - visibleSize.width),
+				static_cast<int>(visibleSize.width * 2 + origin.x));
+			int positionY = cocos2d::RandomHelper::random_int(static_cast<int>(origin.y), static_cast<int>(visibleSize.height + origin.y));
+			//CCLOG("LOGGED UPDATE POSITION CALL x:%i y:%i", positionX, positionY);
+			swimPoint = Point(positionX, positionY);
+		}
+
+		if (this->getPositionX() > swimPoint.x) {
 			this->setScaleX(fScale);
 			this->getPhysicsBody()->setPositionOffset(Vec2(-fSpriteSize.width/3, -fSpriteSize.height / 6));
 		}
@@ -22,7 +35,8 @@ void Shark::run() {
 		}
 		this->setScaleY(fScale);
 		float swimTime = cocos2d::RandomHelper::random_real(0.075, 0.035);
-		auto action = MoveTo::create(swimTime * visibleSize.height, Point(positionX, positionY));
+		
+		auto action = MoveTo::create(swimTime * visibleSize.height, swimPoint);
 		this->runAction(action);
 	}
 }
@@ -51,10 +65,8 @@ void Shark::drawFish() {
 	this->addChild(fishSprite);
 
 	int positionX;
-	int positionXNeg = cocos2d::RandomHelper::random_int(static_cast<int>(origin.x - visibleSize.width),
-		static_cast<int>(origin.x));
-	int positionXPos = cocos2d::RandomHelper::random_int(static_cast<int>(origin.x + visibleSize.width),
-		static_cast<int>(origin.x + visibleSize.width * 2));
+	int positionXNeg = origin.x - visibleSize.width;
+	int positionXPos = origin.x + visibleSize.width * 2;
 	int dirSwitcher = cocos2d::RandomHelper::random_int(static_cast<int>(0), static_cast<int>(1));
 	if (dirSwitcher < 0.5) {
 		positionX = positionXNeg;
@@ -119,12 +131,50 @@ Shark* Shark::create(const std::string &path, ssize_t capacity)
 	return NULL;
 }
 
+void Shark::kill() {
+	this->stopAllActions();
+	this->removeAllChildrenWithCleanup(true);
+	this->getPhysicsBody()->setEnabled(false);
+	Size visibleSize = Director::getInstance()->getVisibleSize();
+	Vec2 origin = Director::getInstance()->getVisibleOrigin();
+	SpriteFrameCache* cache = SpriteFrameCache::getInstance();
+	cache->addSpriteFramesWithFile("sprites/sp_main.plist");
+	auto klSprite = CCSprite::createWithSpriteFrame(cache->getSpriteFrameByName("kl1.png"));
+	Vector<SpriteFrame*> animFrames(8);
+
+	for (int i = 1; i <= 8; i++) {
+		char str[100] = { 0 };
+		sprintf(str, "kl%i.png", i);
+		auto spr = CCSprite::create(str);
+		auto frame = cache->getSpriteFrameByName(str);
+		animFrames.pushBack(frame);
+	}
+
+	auto animation = Animation::createWithSpriteFrames(animFrames, 0.1f);
+
+	this->addChild(klSprite);
+	klSprite->runAction(Sequence::create(Animate::create(animation), CallFunc::create([this]() {
+		this->removeFromParentAndCleanup(true);
+	}), nullptr));
+}
+
 Shark* Shark::create() {
 	return Shark::create("sprites/sp_main.png", 29L);
 }
 
 void Shark::increaseScore(float pts) {
 	++score;
+}
+
+void Shark::decreaseHealth() {
+	--health;
+	if (health == 0) {
+		kill();
+	}
+}
+
+int Shark::getHealth() {
+	return health;
 }
 
 int Shark::getScore() {

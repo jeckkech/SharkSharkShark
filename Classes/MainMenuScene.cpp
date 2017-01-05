@@ -33,7 +33,7 @@ bool MainMenu::init()
 	Vec2 origin = Director::getInstance()->getVisibleOrigin();
 	UserDefault *def = UserDefault::getInstance();
 
-	auto node = CSLoader::createNode("MainMenu.csb");
+	auto node = CSLoader::createNode("scenes/MainMenu.csb");
 	auto panel = node->getChildByName("mainMenu")->getChildByName("mainMenuPanel");
 
 	auto startButton = static_cast<Button*>(panel->getChildByName("startBtn"));
@@ -51,9 +51,9 @@ bool MainMenu::init()
 
 	static_cast<Sprite*>(panel->getChildByName("background"))->getTexture()->setAliasTexParameters();
 
-	startButton->addTouchEventListener(this, toucheventselector(MainMenu::startCallback));
-	galleryButton->addTouchEventListener(this, toucheventselector(MainMenu::galleryCallback));
-	exitButton->addTouchEventListener(this, toucheventselector(MainMenu::exitCallback));
+	startButton->addTouchEventListener(CC_CALLBACK_1(MainMenu::startCallback, this));
+	galleryButton->addTouchEventListener(CC_CALLBACK_1(MainMenu::galleryCallback, this));
+	exitButton->addTouchEventListener(CC_CALLBACK_1(MainMenu::exitCallback, this));
 
 	muteCheckbox->addEventListener(CC_CALLBACK_2(MainMenu::muteCallback, this));
 	

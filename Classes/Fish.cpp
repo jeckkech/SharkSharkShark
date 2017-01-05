@@ -9,11 +9,23 @@ void Fish::run() {
 	if (Director::getInstance()->getActionManager()->getNumberOfRunningActionsInTarget(this) == 1) {
 		auto visibleSize = Director::getInstance()->getVisibleSize();
 		Vec2 origin = Director::getInstance()->getVisibleOrigin();
-		int positionX = cocos2d::RandomHelper::random_int(static_cast<int>(origin.x),
-			static_cast<int>(visibleSize.width+origin.x));
-		int positionY = cocos2d::RandomHelper::random_int(static_cast<int>(origin.y), static_cast<int>(visibleSize.height+origin.y));
-		//CCLOG("LOGGED UPDATE POSITION CALL x:%i y:%i", positionX, positionY);
-		if (this->getPositionX() > positionX) {
+
+		Point swimPoint;
+		if (cocos2d::rand_minus1_1() > 0) {
+			auto player = this->getParent()->getChildByName("playerNode");
+			if (player != NULL) {
+				swimPoint = player->getPosition();
+			}
+		}
+		else {
+			int positionX = cocos2d::RandomHelper::random_int(static_cast<int>(origin.x),
+				static_cast<int>(visibleSize.width + origin.x));
+			int positionY = cocos2d::RandomHelper::random_int(static_cast<int>(origin.y), static_cast<int>(visibleSize.height + origin.y));
+			//CCLOG("LOGGED UPDATE POSITION CALL x:%i y:%i", positionX, positionY);
+			swimPoint = Point(positionX, positionY);
+		}
+
+		if (this->getPositionX() > swimPoint.x) {
 			this->setScaleX(-fScale);
 		}
 		else {
@@ -21,7 +33,7 @@ void Fish::run() {
 		}
 		this->setScaleY(fScale);
 		float swimTime = cocos2d::RandomHelper::random_real(0.075, 0.035);
-		auto action = MoveTo::create(swimTime * visibleSize.height, Point(positionX, positionY));
+		auto action = MoveTo::create(swimTime * visibleSize.height, swimPoint);
 		this->runAction(action);
 	}
 }
