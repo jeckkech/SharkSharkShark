@@ -7,9 +7,11 @@
 #include "JellyFish.h"
 #include "PlayerFish.h"
 #include "Shark.h"
+#include "Ross.h"
 #include "Skeleton.h"
 #include "cocostudio/CocoStudio.h"
 #include "ui/CocosGUI.h"
+#include <iomanip>
 
 USING_NS_CC;
 using namespace cocostudio::timeline;
@@ -42,8 +44,6 @@ bool MainGame::init()
 		return false;
 	}
 
-
-
 	Director::getInstance()->setProjection(Director::Projection::_2D);
 	auto visibleSize = Director::getInstance()->getVisibleSize();
 	Vec2 origin = Director::getInstance()->getVisibleOrigin();
@@ -69,10 +69,7 @@ bool MainGame::init()
 	parallaxBg->setPosition(Point(origin.x, origin.y));
 	parallaxBg->getTexture()->setAliasTexParameters();
 
-	//float bgScale = visibleSize.height / background->getContentSize().height;
 	float bgScale2 = visibleSize.width / parallaxBg2->getContentSize().width;
-	//background->setScale(bgScale);
-	//this->addChild(background, 1);
 
 	parallaxBg2->setScale(bgScale2);
 	this->addChild(parallaxBg2, 2);
@@ -88,6 +85,19 @@ bool MainGame::init()
 
 	node->setContentSize(visibleSize);
 	auto panel = node->getChildByName("HUDElements")->getChildByName("hudPanel");
+
+	auto biteButton = static_cast<cocos2d::ui::Button*>(panel->getChildByName("biteActionPanel")->getChildByName("biteButton"));
+	auto biteIcon = static_cast<Node*>(panel->getChildByName("biteActionPanel")->getChildByName("biteIconAnimation"));
+	biteButton->addTouchEventListener(CC_CALLBACK_2(MainGame::biteCallback, this));
+
+	Sprite::create("res/buttons/biteBtn1.png")->getTexture()->setAliasTexParameters();
+	Sprite::create("res/buttons/biteBtn2.png")->getTexture()->setAliasTexParameters();
+
+	auto biteButtonTimeline = (cocostudio::timeline::ActionTimeline*)biteIcon->getActionByTag(biteIcon->getTag());
+	biteButtonTimeline->setTimeSpeed(0.06f);
+	biteButtonTimeline->gotoFrameAndPlay(0);
+	biteIcon->runAction(biteButtonTimeline);
+
 	Sprite::create("res/hud/lifebar.png")->getTexture()->setAliasTexParameters();
 
 	auto background = CSLoader::createNode("res/background/background.csb");
@@ -120,9 +130,7 @@ bool MainGame::init()
 
 	repeatButton->addTouchEventListener(CC_CALLBACK_1(MainGame::repeatCallback, this));
 
-	__String *tempScore = __String::createWithFormat("%i", totalScore);
 	scoreLabel = static_cast<cocos2d::ui::Text*>(panel->getChildByName("scoreLabel"));
-	scoreLabel->setString(tempScore->getCString());
 
 	ui::Helper::doLayout(node);
 	this->addChild(node, 5);
@@ -137,28 +145,40 @@ bool MainGame::init()
 	
 	playerContactListener = EventListenerPhysicsContact::create();
 	playerContactListener->onContactBegin = CC_CALLBACK_1(MainGame::onContactBegin, this);
+	playerContactListener->onContactSeparate = CC_CALLBACK_1(MainGame::onContactSeparate, this);
+	
 	this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(playerContactListener, this);
 	return true;
 }
 
 void MainGame::decreaseLifebarPosition() {
-	auto panel = this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel");
-	auto bossLifebar = static_cast<Node*>(panel->getChildByName("lifebar"));
-	int newFrame = pActionTimeline->getCurrentFrame() - 5;
-	
-	pActionTimeline->setCurrentFrame(newFrame);
-	pActionTimeline->gotoFrameAndPause(newFrame);
-	pActionTimeline->setTimeSpeed(0.25f);
-	this->runAction(pActionTimeline);
+	if(pActionTimeline->getCurrentFrame() >= 5){
+		auto panel = this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel");
+		auto bossLifebar = static_cast<Node*>(panel->getChildByName("lifebar"));
+		int newFrame = pActionTimeline->getCurrentFrame() - 5;
+
+		pActionTimeline->gotoFrameAndPause(newFrame);
+		pActionTimeline->setTimeSpeed(0.25f);
+		this->runAction(pActionTimeline);
+	}
 }
 
+void MainGame::gameOver() {
+	this->unscheduleUpdate();
+	this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel")->getChildByName("gameOverPanel")->setVisible(true);
+	this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel")->getChildByName("biteActionPanel")->setVisible(false);
+	this->getEventDispatcher()->removeEventListener(playerTouchListener);
+	this->getEventDispatcher()->removeEventListener(playerContactListener);
+	saveHiScore();
+	isGameOver = true;
+	isBiteMode = false;
+}
 void MainGame::lifebarInitialize() {
 	auto panel = this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel");
 	auto bossLifebar = static_cast<Node*>(panel->getChildByName("lifebar"));
 
 	pActionTimeline = (cocostudio::timeline::ActionTimeline*)bossLifebar->getActionByTag(bossLifebar->getTag());
 	pActionTimeline->retain();
-	//pActionTimeline->reverse();
 	pActionTimeline->gotoFrameAndPlay(0, false);
 	pActionTimeline->setTimeSpeed(0.25f);
 	this->runAction(pActionTimeline);
@@ -211,31 +231,27 @@ void MainGame::blinkNotification(std::string str) {
 }
 
 void MainGame::setUpInitial(){
-
 	Fish* fish1 = Fish::create();
 	this->addChild(fish1, 2);
 	fish1->drawFish(1);
-	//fishList.push_front(fish1);
 
 	Fish* fish2 = Fish::create();
 	this->addChild(fish2, 2);
 	fish2->drawFish(1);
-	//fishList.push_front(fish2);
 
 	Fish* fish3 = Fish::create();
 	this->addChild(fish3, 2);
 	fish3->drawFish(2);
-	//fishList.push_front(fish3);
 
 	Fish* fish5 = Fish::create();
 	this->addChild(fish5, 2);
-	fish5->drawFish(3);
+	fish5->drawFish(2);
 
 	Fish* fish6 = Fish::create();
 	this->addChild(fish6, 2);
 	fish6->drawFish(2);
 
-	UserDefault::getInstance()->setIntegerForKey("fishStage", 3);
+	UserDefault::getInstance()->setIntegerForKey("fishStage", 2);
 
 	playerTouchListener = EventListenerTouchOneByOne::create();
 	playerTouchListener->setSwallowTouches(true);
@@ -257,16 +273,13 @@ void MainGame::update(float dt) {
 	parallaxBg->setPositionX(origin.x + bgMargin/2);
 	parallaxBg2->setPositionX(origin.x + bgMargin / 5);
 
-	if (playerFish != NULL && shark != NULL && playerFish->getBoundingBox().intersectsRect(shark->getBoundingBox())) {
-		blinkNotification("TAP TO \nBITE!");
-	}
-
 	if (totalScore >= 500 && !hwStage1) {
 		hwStage1 = true;
 		blinkNotification("SHARK \nATTACK!!");
 		lifebarInitialize();
 		
 		shark = Shark::create();
+		shark->setName("sharkNode");
 		this->addChild(shark, 2);
 		shark->drawFish();
 
@@ -274,12 +287,13 @@ void MainGame::update(float dt) {
 		this->addChild(cancer, 2);
 		cancer->drawFish(1);
 
-		UserDefault::getInstance()->setIntegerForKey("sharkStage", 1);
-		UserDefault::getInstance()->setIntegerForKey("cancerStage", 1);
-
 		Fish* fish6 = Fish::create();
 		this->addChild(fish6, 2);
 		fish6->drawFish(3);
+
+		UserDefault::getInstance()->setIntegerForKey("sharkStage", 1);
+		UserDefault::getInstance()->setIntegerForKey("cancerStage", 1);
+		UserDefault::getInstance()->setIntegerForKey("fishStage", 3);
 	}
 
 	if (totalScore >= 1000 && !stage1) {
@@ -329,6 +343,16 @@ bool MainGame::onTouchStop(cocos2d::Touch *touch, cocos2d::Event *event) {
 	//playerFish->stopActionByTag(1444);
 }
 
+bool MainGame::onContactSeparate(cocos2d::PhysicsContact &contact) {
+	auto bodyA = contact.getShapeA()->getBody();
+	auto bodyB = contact.getShapeB()->getBody();
+	int collisionBitmaskA = contact.getShapeA()->getCollisionBitmask();
+	int collisionBitmaskB = contact.getShapeB()->getCollisionBitmask();
+
+	if (playerFish->getScore() >= 60 && ((collisionBitmaskA == 0x15 && collisionBitmaskB == 0x09) || (collisionBitmaskA == 0x09 && collisionBitmaskB == 0x15))) {
+		this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel")->getChildByName("biteActionPanel")->setVisible(false);
+	}
+}
 bool MainGame::onContactBegin(cocos2d::PhysicsContact &contact) {
 	Vec2 position = Vec2(0, 0);
 	Size visibleSize = Director::getInstance()->getVisibleSize();
@@ -341,14 +365,24 @@ bool MainGame::onContactBegin(cocos2d::PhysicsContact &contact) {
 	
 	if ((collisionBitmaskA == 0x15 && collisionBitmaskB == 0x09) ||
 		(collisionBitmaskB == 0x15 && collisionBitmaskA == 0x09)) {
-		shark->decreaseHealth();
-		decreaseLifebarPosition();
+		this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel")->getChildByName("biteActionPanel")->setVisible(true);
+		isBiteMode = true;
+	}
+	if ((collisionBitmaskA == 0x16 && collisionBitmaskB == 0x09)) {
+		gameOver();
+		static_cast<Fish*>(bodyB->getNode())->kill(true);
+		return true;
+	} else if ((collisionBitmaskA == 0x09 && collisionBitmaskB == 0x16)) {
+		gameOver();
+		static_cast<Fish*>(bodyA->getNode())->kill(true);
+		return true;
 	}
 	if ((collisionBitmaskA == 0x15 || collisionBitmaskB == 0x15) || (collisionBitmaskA == 0x06 && collisionBitmaskB == 0x06) ||
-		(collisionBitmaskA == 0x14 && collisionBitmaskB == 0x06) || (collisionBitmaskA == 0x06 && collisionBitmaskB == 0x14)) {
+		(collisionBitmaskA == 0x16 || collisionBitmaskB == 0x16) || (collisionBitmaskA == 0x14 && collisionBitmaskB == 0x06) ||
+		(collisionBitmaskA == 0x06 && collisionBitmaskB == 0x14)) {
 		return false;
 	}
-	
+
 	if (bodyA->getPosition().x > origin.x && bodyB->getPosition().x > origin.x
 		&& bodyA->getPosition().x < origin.x + visibleSize.width && bodyB->getPosition().x < origin.x + visibleSize.width
 		&& collisionBitmaskA != 0x07 && collisionBitmaskB != 0x07) {
@@ -377,13 +411,8 @@ bool MainGame::onContactBegin(cocos2d::PhysicsContact &contact) {
 					userCollided = true;
 				}
 				else if (collisionBitmaskB == 0x09) {
-					this->unscheduleUpdate();
-					
-					this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel")->getChildByName("gameOverPanel")->setVisible(true);
-					this->getEventDispatcher()->removeEventListener(playerTouchListener);
-					this->getEventDispatcher()->removeEventListener(playerContactListener);
+					gameOver();
 					userCollided = true;
-					gameOver = true;
 				}
 				if (collisionBitmaskA != 0x09 && bodyA->getCollisionBitmask() != 0x06) {
 					node1->increaseScore(1.0);
@@ -394,7 +423,7 @@ bool MainGame::onContactBegin(cocos2d::PhysicsContact &contact) {
 
 				if (node2->getPositionX() < origin.x || collisionBitmaskB == 0x06 || 
 					collisionBitmaskA == 0x06 || collisionBitmaskA == 0x14 ||
-					collisionBitmaskB == 0x014) {
+					collisionBitmaskB == 0x14) {
 					userCollided = true;
 				}
 				if (bodyB->getCollisionBitmask() == 0x08) {
@@ -420,13 +449,8 @@ bool MainGame::onContactBegin(cocos2d::PhysicsContact &contact) {
 					userCollided = true;
 				}
 				else if (collisionBitmaskA == 0x09) {
-					this->unscheduleUpdate();
-					
-					this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel")->getChildByName("gameOverPanel")->setVisible(true);
-					this->getEventDispatcher()->removeEventListener(playerTouchListener);
-					this->getEventDispatcher()->removeEventListener(playerContactListener);
+					gameOver();
 					userCollided = true;
-					gameOver = true;
 				}
 				if (collisionBitmaskB != 0x09 && bodyB->getCollisionBitmask() != 0x06) {
 					node2->increaseScore(1.0);
@@ -435,7 +459,7 @@ bool MainGame::onContactBegin(cocos2d::PhysicsContact &contact) {
 				position = node1->getPosition();
 				if (node1->getPositionX() < origin.x || collisionBitmaskA == 0x06 || 
 					collisionBitmaskB == 0x06 || collisionBitmaskA == 0x14 ||
-					collisionBitmaskB == 0x014) {
+					collisionBitmaskB == 0x14) {
 					userCollided = true;
 				}
 				if (collisionBitmaskA == 0x08) {
@@ -446,6 +470,7 @@ bool MainGame::onContactBegin(cocos2d::PhysicsContact &contact) {
 				}
 
 			}
+
 			int newFishId = cocos2d::RandomHelper::random_int(1, topStage);
 			int fishRandomizer = cocos2d::RandomHelper::random_int(static_cast<int>(0), static_cast<int>(10));
 
@@ -481,6 +506,11 @@ bool MainGame::onContactBegin(cocos2d::PhysicsContact &contact) {
 	}
 }
 
+void MainGame::saveHiScore() {
+	if (UserDefault::getInstance()->getIntegerForKey("hiScore") < totalScore) {
+		UserDefault::getInstance()->setIntegerForKey("hiScore", totalScore);
+	}
+}
 void MainGame::createScoreLabel(int points, Vec2 position) {
 	auto label = Label::createWithTTF(__String::createWithFormat("%i", points)->getCString(), "fonts/Gamegirl.ttf", 8);
 	label->setPosition(position);
@@ -497,18 +527,21 @@ void MainGame::createScoreLabel(int points, Vec2 position) {
 
 void MainGame::setScore(int points) {
 	totalScore = totalScore + points;
-	__String *tempScore = __String::createWithFormat("%i", totalScore);
-	scoreLabel->setString(tempScore->getCString());
+	std::stringstream ss;
+	ss << std::setfill('0') << std::setw(7) << totalScore;
+	scoreLabel->setString(ss.str());
+	ss.clear();
+	ss.str(std::string());
 }
 
 void MainGame::menuCloseCallback(Ref* pSender)
 {
 	this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel")->getChildByName("gameOverPanel")->setVisible(false);
 	this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel")->getChildByName("countdown")->setVisible(false);
+	this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel")->getChildByName("biteActionPanel")->setVisible(false);
 	auto prompt = this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel")->getChildByName("exitPrompt");
 	prompt->setVisible(true);
 	Director::getInstance()->pause();
-	//Director::getInstance()->pause();
 	static_cast<Sprite*>(prompt->getChildByName("promptExit"))->getTexture()->setAliasTexParameters();
 
 	auto exitButton = static_cast<cocos2d::ui::Button*>(prompt->getChildByName("promptButtonYes"));
@@ -520,17 +553,107 @@ void MainGame::menuCloseCallback(Ref* pSender)
 	resumeButton->addTouchEventListener(CC_CALLBACK_1(MainGame::resume, this));
 }
 
+void MainGame::biteCallback(Ref* pSender, Widget::TouchEventType type) {
+	if(type == Widget::TouchEventType::BEGAN){
+		this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel")->getChildByName("biteActionPanel")->setVisible(false);
+		isBiteMode = false;
+		int health;
+		if(!hwStage8){
+			auto boss = static_cast<Shark*>(this->getChildByName("sharkNode"));
+			boss->decreaseHealth();
+			if (boss->getHealth() == 0) {
+				hwStage8 = true;
+				boss->kill();
+				endingSequence1();
+			}
+		}
+		else {
+			auto boss = static_cast<Ross*>(this->getChildByName("rossNode"));
+			boss->decreaseHealth();
+		}
+
+		decreaseLifebarPosition();
+		createScoreLabel(50, playerFish->getPosition());
+		setScore(50);
+	}
+}
+
 void MainGame::resume(Ref* pSender) {
 	auto prompt = this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel")->getChildByName("exitPrompt");
 	prompt->setVisible(false);
 
 	Director::getInstance()->resume();
-	if (gameOver) {
+	if (isGameOver) {
 		this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel")->getChildByName("gameOverPanel")->setVisible(true);
 	}
 	if (isInCountdown) {
 		this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel")->getChildByName("countdown")->setVisible(true);
 	}
+	if (isBiteMode) {
+		this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel")->getChildByName("biteActionPanel")->setVisible(true);
+	}
+}
+
+void MainGame::endingSequence1() {
+	playerContactListener->setEnabled(false);
+	
+	this->runAction(Sequence::create(
+		CallFunc::create([this]() {
+			staticNotification("CONGRATULATIONS!");
+		}), DelayTime::create(3.0),
+			CallFunc::create([this]() {
+			staticNotification("YOU'VE DEFEATED\nAN EVIL\nSHARK MONSTER!");
+		}), DelayTime::create(3.0),
+			CallFunc::create([this]() {
+			staticNotification("BUT WAIT...");
+		}), DelayTime::create(2.0),
+			CallFunc::create([this]() {
+			staticNotification("WHAT IS THAT??");
+		}), DelayTime::create(2.0),
+			CallFunc::create([this]() {
+			staticNotification("OH NO!");
+		}), DelayTime::create(2.0),
+			CallFunc::create([this]() {
+			staticNotification("LOOKS LIKE\nTHERE'S ANOTHER\nMONSTER\nTO DEFEAT!");
+		}), DelayTime::create(3.0),
+			CallFunc::create([this]() {
+			staticNotification("THE LEGEND SAYS\nHE'S THE MOST\nVICIOUS CREATURE\nIN THE OCEAN!");
+		}), DelayTime::create(3.0),
+			CallFunc::create([this]() {
+			staticNotification("HIS NAME IS...\nROSS?");
+		}), DelayTime::create(3.0),
+			CallFunc::create([this]() {
+			this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel")->getChildByName("staticNotificationPanel")->setVisible(false);
+			blinkNotification("GODDAMIT\nROSS!!");
+			Director::getInstance()->resume();
+			playerContactListener->setEnabled(true);
+			auto bossTitle = static_cast<cocos2d::ui::Text*>(this->getChildByName("HUDElements")->
+			getChildByName("HUDElements")->getChildByName("hudPanel")->getChildByName("bossTitle"));
+			bossTitle->setString("ROSS");
+			bossTitle->runAction(Blink::create(4.0, 30));
+
+			pActionTimeline->gotoFrameAndPlay(0, false);
+			this->runAction(pActionTimeline);
+			
+			Ross* ross = Ross::create();
+			ross->setName("rossNode");
+			this->addChild(ross, 2);
+			ross->drawFish();
+			UserDefault::getInstance()->setIntegerForKey("rossStage", 1);
+		}), nullptr
+		));
+}
+
+void MainGame::endingSequence2() {
+	playerContactListener->setEnabled(false);
+	UserDefault::getInstance()->setBoolForKey("infiniteModeUnlocked", true);
+}
+
+void MainGame::staticNotification(std::string str) {
+	auto notificationPanel = this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel")->getChildByName("staticNotificationPanel");
+	auto notificationLabel = static_cast<cocos2d::ui::Text*>(notificationPanel->getChildByName("staticNotification"));
+	notificationPanel->setVisible(true);
+	notificationLabel->setString(str);
 }
 
 void MainGame::repeatCallback(Ref* pSender) {
@@ -540,6 +663,7 @@ void MainGame::repeatCallback(Ref* pSender) {
 }
 
 void MainGame::exit(Ref* pSender) {
+	saveHiScore();
 	auto scene = MainMenu::createScene();
 	Director::getInstance()->resume();
 	Director::getInstance()->replaceScene(TransitionFadeTR::create(1.0f, scene));

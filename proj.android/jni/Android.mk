@@ -23,7 +23,9 @@ LOCAL_SRC_FILES := hellocpp/main.cpp \
 				   ../../Classes/SeaHorse.cpp \
 				   ../../Classes/Shark.cpp \
 				   ../../Classes/MainMenuScene.cpp \
-				   ../../Classes/OptionsScene.cpp
+				   ../../Classes/OptionsScene.cpp \
+				   ../../Classes/Ross.cpp \
+				   ../../Classes/Bubble.cpp
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/../../Classes
 

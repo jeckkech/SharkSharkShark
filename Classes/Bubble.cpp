@@ -25,8 +25,11 @@ void Bubble::run(Vec2 position) {
 	//this->getBoundingBox().setRect(this->getPositionX(), this->getPositionY(), fishSprite->getContentSize().width * fScale, fishSprite->getContentSize().height * fScale);
 	auto physicsBody = PhysicsBody::createCircle(this->getContentSize().width / 2, PhysicsMaterial(1.0f, 1.0f, 1.0f));
 	//physicsBody->setMass(2000);
-	physicsBody->applyForce(Vec2(-20000, -20000), Vec2(origin.x + visibleSize.width / 2, origin.y + visibleSize.height));
-	physicsBody->setDynamic(true);
+	//physicsBody->applyForce(Vec2(-20000, -20000), Vec2(origin.x + visibleSize.width / 2, origin.y + visibleSize.height));
+	physicsBody->setDynamic(false);
+	physicsBody->setCategoryBitmask(0x02);
+	physicsBody->setCollisionBitmask(0x16);
+	physicsBody->setContactTestBitmask(0xFFFFFFFF);
 	physicsBody->setRotationEnable(true);
 	physicsBody->setEnabled(true);
 	this->setPhysicsBody(physicsBody);

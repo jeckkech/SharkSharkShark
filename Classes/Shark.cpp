@@ -1,4 +1,5 @@
 #include "Shark.h"
+#include "Ross.h"
 #include "MainGameScene.h"
 
 USING_NS_CC;
@@ -79,14 +80,16 @@ void Shark::drawFish() {
 	this->setAnchorPoint(Point(0, 0));
 	this->setScale(fScale);
 	this->setPosition(positionX, positionY);
-	auto physicsBody = PhysicsBody::createBox(Size(fishSprite->getContentSize().width/3, fishSprite->getContentSize().height/2));
+	
+	Vec2 pts[8] = { Vec2(0, 13),Vec2(10, 19),Vec2(25, 22),Vec2(29, 27),	Vec2(26, 2),Vec2(18, 6),Vec2(6, 9),	Vec2(0, 13) };
+	auto physicsBody = PhysicsBody::createPolygon(pts, 8, PhysicsMaterial(1, 1, 1), Vec2(-17, -13));
 
 	physicsBody->setDynamic(false);
 	physicsBody->setCategoryBitmask(0x02);
 	physicsBody->setCollisionBitmask(0x14);
 	physicsBody->setContactTestBitmask(0xFFFFFFFF);
 	physicsBody->setTag(10);
-
+	
 	auto shape = PhysicsShapeBox::create(Size(fishSprite->getContentSize().width/2, fishSprite->getContentSize().height / 2), PhysicsMaterial(1, 1, 1), Vec2(fishSprite->getContentSize().width/4*2, 0), 0.0);
 	shape->setCollisionBitmask(0x15);
 	shape->setCategoryBitmask(0x02);
@@ -168,9 +171,6 @@ void Shark::increaseScore(float pts) {
 
 void Shark::decreaseHealth() {
 	--health;
-	if (health == 0) {
-		kill();
-	}
 }
 
 int Shark::getHealth() {

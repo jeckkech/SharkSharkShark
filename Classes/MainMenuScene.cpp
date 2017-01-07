@@ -3,6 +3,7 @@
 #include "MainMenuScene.h"
 #include "MainGameScene.h"
 #include "OptionsScene.h"
+#include <iomanip>
 
 USING_NS_CC;
 using namespace cocostudio::timeline;
@@ -37,14 +38,25 @@ bool MainMenu::init()
 	auto panel = node->getChildByName("mainMenu")->getChildByName("mainMenuPanel");
 
 	auto startButton = static_cast<Button*>(panel->getChildByName("startBtn"));
+	auto infiniteButton = static_cast<Button*>(panel->getChildByName("infiniteBtn"));
 	auto galleryButton = static_cast<Button*>(panel->getChildByName("galleryBtn"));
 	auto exitButton = static_cast<Button*>(panel->getChildByName("exitBtn"));
 
 	auto muteCheckbox = static_cast<CheckBox*>(panel->getChildByName("muteCheckbox"));
-	
+	auto hiScoreLabel = static_cast<Text*>(panel->getChildByName("hiScore"));
 	if (def->getBoolForKey("silentMode")) {
 		muteCheckbox->setSelected(true);
 	}
+	if (def->getBoolForKey("infiniteModeUnlocked")) {
+		infiniteButton->setVisible(true);
+		panel->getChildByName("lockDark")->setVisible(false);
+		panel->getChildByName("infiniteBtnLocked")->setVisible(false);
+	}
+	else {
+		static_cast<Sprite*>(panel->getChildByName("lockDark"))->getTexture()->setAliasTexParameters();
+		static_cast<Sprite*>(panel->getChildByName("infiniteBtnLocked"))->getTexture()->setAliasTexParameters();
+	}
+	CCSprite::create(infiniteButton->getNormalFile().file)->getTexture()->setAliasTexParameters();
 	CCSprite::create(startButton->getNormalFile().file)->getTexture()->setAliasTexParameters();
 	CCSprite::create(galleryButton->getNormalFile().file)->getTexture()->setAliasTexParameters();
 	CCSprite::create(exitButton->getNormalFile().file)->getTexture()->setAliasTexParameters();
@@ -57,6 +69,13 @@ bool MainMenu::init()
 
 	muteCheckbox->addEventListener(CC_CALLBACK_2(MainMenu::muteCallback, this));
 	
+	int hiScore = UserDefault::getInstance()->getIntegerForKey("hiScore");
+	std::stringstream ss;
+	ss << std::setfill('0') << std::setw(8) << hiScore;
+	hiScoreLabel->setString(ss.str());
+	ss.clear();
+	ss.str(std::string());
+
 	panel->setScaleX(visibleSize.width / panel->getContentSize().width);
 	panel->setScaleY(visibleSize.height / panel->getContentSize().height);
 
@@ -67,6 +86,11 @@ bool MainMenu::init()
 	ui::Helper::doLayout(node);
 	this->addChild(node, 10);
 	return true;
+}
+
+unsigned getNumberOfDigits(unsigned i)
+{
+	return i > 0 ? (int)log10((double)i) + 1 : 1;
 }
 
 void MainMenu::exitCallback(Ref* pSender)

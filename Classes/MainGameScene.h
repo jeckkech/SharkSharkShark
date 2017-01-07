@@ -19,7 +19,9 @@ public:
     // a selector callback
     void menuCloseCallback(cocos2d::Ref* pSender);
 	void repeatCallback(cocos2d::Ref* pSender);
-	
+	void biteCallback(cocos2d::Ref* pSender, cocos2d::ui::Widget::TouchEventType type);
+	void blinkNotification(std::string str);
+	void staticNotification(std::string str);
 	void update(float) override;
 	void onEnterTransitionDidFinish() override;
     // implement the "static create()" method manually
@@ -37,9 +39,12 @@ private:
 	bool stage1 = false;
 	bool hwStage2 = false;
 	bool stage2 = false;
-	bool gameOver = false;
+	bool hwStage8 = false;
+	bool isGameOver = false;
+	bool isBiteMode = false;
+	
 	bool isInCountdown = false;
-	int topStage = 3;
+	int topStage = 2;
 
 	cocos2d::ui::Text *scoreLabel;
 	cocos2d::Sprite *parallaxBg;
@@ -48,19 +53,23 @@ private:
 	void lifebarInitialize();
 	void decreaseLifebarPosition();
 	void setScore(int points);
+	void saveHiScore();
+	void gameOver();
+	void endingSequence1();
+	void endingSequence2();
 	void exit(cocos2d::Ref* pSender);
 	void resume(cocos2d::Ref* pSender);
-	void blinkNotification(std::string str);
+
 	void createScoreLabel(int points, cocos2d::Vec2 position);
 	cocos2d::EventListenerTouchOneByOne* playerTouchListener;
 	cocos2d::EventListenerPhysicsContact* playerContactListener;
 	bool onContactBegin(cocos2d::PhysicsContact &contact);
+	bool onContactSeparate(cocos2d::PhysicsContact &contact);
 	bool onTouchMove(cocos2d::Touch *touch, cocos2d::Event *event);
 	bool onTouchStop(cocos2d::Touch *touch, cocos2d::Event *event);
 	PlayerFish* playerFish;
 	Shark* shark;
 	cocostudio::timeline::ActionTimeline* pActionTimeline;
-	std::deque<Fish*> fishList;
 };
 
 #endif // __MAINGAME_SCENE_H__

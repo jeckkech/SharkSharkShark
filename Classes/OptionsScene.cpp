@@ -89,6 +89,7 @@ void Options::unlockElements()
 			sprintf(imgName, "img%i", o);
 
 			panel0->getChildByName(lockName)->setVisible(false);
+			static_cast<Sprite*>(panel0->getChildByName(imgName))->getTexture()->setAliasTexParameters();
 			panel0->getChildByName(imgName)->setColor(Color3B(225, 225, 225));
 		}
 	}
@@ -97,10 +98,14 @@ void Options::unlockElements()
 		if (UserDefault::getInstance()->getIntegerForKey("playerStageFinal") == 1) {
 			panel1->getChildByName("lock1")->setVisible(false);
 			panel1->getChildByName("img1")->setColor(Color3B(225, 225, 225));
+			static_cast<Sprite*>(panel1->getChildByName("img1"))->getTexture()->setAliasTexParameters();
+			static_cast<Text*>(panel1->getChildByName("description"))->setString("that's a cool fish\nnamed Arin!");
 		}
 		else {
 			panel2->getChildByName("lock1")->setVisible(false);
+			static_cast<Sprite*>(panel2->getChildByName("img1"))->getTexture()->setAliasTexParameters();
 			panel2->getChildByName("img1")->setColor(Color3B(225, 225, 225));
+			static_cast<Text*>(panel1->getChildByName("description"))->setString("that's a curly-scaled\nDanny-fish!");
 		}
 	}
 
@@ -113,6 +118,7 @@ void Options::unlockElements()
 			sprintf(imgName, "img%i", o);
 
 			panel3->getChildByName(lockName)->setVisible(false);
+			static_cast<Sprite*>(panel3->getChildByName(imgName))->getTexture()->setAliasTexParameters();
 			panel3->getChildByName(imgName)->setColor(Color3B(225, 225, 225));
 		}
 	}
@@ -127,19 +133,33 @@ void Options::unlockElements()
 
 			panel4->getChildByName(lockName)->setVisible(false);
 			panel4->getChildByName(imgName)->setColor(Color3B(225, 225, 225));
+			static_cast<Sprite*>(panel4->getChildByName(imgName))->getTexture()->setAliasTexParameters();
+			static_cast<Text*>(panel4->getChildByName("description"))->setString("These guys are a piece \nof a relentless crabbage.\nThey love to hang out on a \nbottom and eventually jump up.");
 		}
 	}
 
 	if (UserDefault::getInstance()->getIntegerForKey("jellyFishStage") == 1) {
 		panel5->getChildByName("lock1")->setVisible(false);
 		panel5->getChildByName("img1")->setColor(Color3B(225, 225, 225));
+		static_cast<Sprite*>(panel5->getChildByName("img1"))->getTexture()->setAliasTexParameters();
+		static_cast<Text*>(panel5->getChildByName("description"))->setString("Silent but violent.\nIt may look small but\nit will straight up\nkill you.");
 	}
 	if (UserDefault::getInstance()->getIntegerForKey("seaHorseStage") == 1) {
 		panel6->getChildByName("lock1")->setVisible(false);
 		panel6->getChildByName("img1")->setColor(Color3B(225, 225, 225));
+		static_cast<Sprite*>(panel6->getChildByName("img1"))->getTexture()->setAliasTexParameters();
+		static_cast<Text*>(panel6->getChildByName("description"))->setString("This guy is\nrare and fast\nbut he's the most\nvaluable one.");
 	}
 	if (UserDefault::getInstance()->getIntegerForKey("sharkStage") == 1) {
 		panel7->getChildByName("lock1")->setVisible(false);
 		panel7->getChildByName("img1")->setColor(Color3B(225, 225, 225));
+		static_cast<Sprite*>(panel7->getChildByName("img1"))->getTexture()->setAliasTexParameters();
+		static_cast<Text*>(panel7->getChildByName("description"))->setString("This guy looks tough\nbut he's got a\nweak spot on\nits tail.\nBut you have to be\ntough to do it.");
+	} 
+	if (UserDefault::getInstance()->getIntegerForKey("rossStage") == 1) {
+		panel8->getChildByName("lock1")->setVisible(false);
+		panel8->getChildByName("img1")->setColor(Color3B(225, 225, 225));
+		static_cast<Sprite*>(panel8->getChildByName("img1"))->getTexture()->setAliasTexParameters();
+		static_cast<Text*>(panel8->getChildByName("description"))->setString("An evil octopus\nnamed ROSS!\nGODDAMIT!\nhe's invincible during\nhis rage mode.");
 	}
 }
