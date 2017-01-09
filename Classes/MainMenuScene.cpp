@@ -1,5 +1,6 @@
 #include "cocostudio/CocoStudio.h"
 #include "ui/CocosGUI.h"
+#include "SimpleAudioEngine.h"
 #include "MainMenuScene.h"
 #include "MainGameScene.h"
 #include "OptionsScene.h"
@@ -46,6 +47,10 @@ bool MainMenu::init()
 	auto hiScoreLabel = static_cast<Text*>(panel->getChildByName("hiScore"));
 	if (def->getBoolForKey("silentMode")) {
 		muteCheckbox->setSelected(true);
+		CocosDenshion::SimpleAudioEngine::getInstance()->setEffectsVolume(0.0f);
+	}
+	else {
+		CocosDenshion::SimpleAudioEngine::getInstance()->setEffectsVolume(2.5f);
 	}
 	if (def->getBoolForKey("infiniteModeUnlocked")) {
 		infiniteButton->setVisible(true);
@@ -63,9 +68,10 @@ bool MainMenu::init()
 
 	static_cast<Sprite*>(panel->getChildByName("background"))->getTexture()->setAliasTexParameters();
 
-	startButton->addTouchEventListener(CC_CALLBACK_1(MainMenu::startCallback, this));
-	galleryButton->addTouchEventListener(CC_CALLBACK_1(MainMenu::galleryCallback, this));
-	exitButton->addTouchEventListener(CC_CALLBACK_1(MainMenu::exitCallback, this));
+	startButton->addTouchEventListener(CC_CALLBACK_2(MainMenu::startCallback, this));
+	infiniteButton->addTouchEventListener(CC_CALLBACK_2(MainMenu::startInfiniteCallback, this));
+	galleryButton->addTouchEventListener(CC_CALLBACK_2(MainMenu::galleryCallback, this));
+	exitButton->addTouchEventListener(CC_CALLBACK_2(MainMenu::exitCallback, this));
 
 	muteCheckbox->addEventListener(CC_CALLBACK_2(MainMenu::muteCallback, this));
 	
@@ -93,24 +99,40 @@ unsigned getNumberOfDigits(unsigned i)
 	return i > 0 ? (int)log10((double)i) + 1 : 1;
 }
 
-void MainMenu::exitCallback(Ref* pSender)
+void MainMenu::exitCallback(Ref* pSender, Widget::TouchEventType type)
 {
-	Director::getInstance()->end();
-	#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+	if (type == Widget::TouchEventType::BEGAN) {
+		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("sounds/select.wav");
+		Director::getInstance()->end();
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
 		exit(0);
-	#endif
+#endif
+	}
 }
 
-void MainMenu::startCallback(Ref* pSender)
+void MainMenu::startCallback(Ref* pSender, Widget::TouchEventType type)
 {
-	auto scene = MainGame::createScene();
-	Director::getInstance()->replaceScene(TransitionFadeBL::create(1.0, scene));
+	if (type == Widget::TouchEventType::BEGAN) {
+		auto scene = MainGame::createScene();
+		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("sounds/exit.wav");
+		Director::getInstance()->replaceScene(TransitionFadeBL::create(1.0, scene));
+	}
 }
 
-void MainMenu::galleryCallback(Ref* pSender)
+void MainMenu::startInfiniteCallback(Ref* pSender, Widget::TouchEventType type) {
+	if (type == Widget::TouchEventType::BEGAN) {
+		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("sounds/exit.wav");
+		auto scene = MainGame::createSceneInfinite();
+		Director::getInstance()->replaceScene(TransitionFadeBL::create(1.0, scene));
+	}
+}
+void MainMenu::galleryCallback(Ref* pSender, Widget::TouchEventType type)
 {
-	auto scene = Options::createScene();
-	Director::getInstance()->replaceScene(TransitionFadeDown::create(0.5, scene));
+	if (type == Widget::TouchEventType::BEGAN) {
+		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("sounds/exit.wav");
+		auto scene = Options::createScene();
+		Director::getInstance()->replaceScene(TransitionFadeDown::create(0.5, scene));
+	}
 }
 
 void MainMenu::muteCallback(Ref* pSender, CheckBox::EventType type)
@@ -120,10 +142,12 @@ void MainMenu::muteCallback(Ref* pSender, CheckBox::EventType type)
 	{
 	case CheckBox::EventType::SELECTED:
 		def->setBoolForKey("silentMode", true);
+		CocosDenshion::SimpleAudioEngine::getInstance()->setEffectsVolume(0.0f);
 		break;
 
 	case CheckBox::EventType::UNSELECTED:
 		def->setBoolForKey("silentMode", false);
+		CocosDenshion::SimpleAudioEngine::getInstance()->setEffectsVolume(2.5f);
 		break;
 
 	default:

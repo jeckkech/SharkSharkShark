@@ -1,6 +1,7 @@
 #include "Ross.h"
 #include "Bubble.h"
 #include "MainGameScene.h"
+#include "SimpleAudioEngine.h"
 
 USING_NS_CC;
 
@@ -91,11 +92,9 @@ void Ross::switchMode(bool isAngry) {
 	SpriteFrameCache* cache = SpriteFrameCache::getInstance();
 	cache->addSpriteFramesWithFile("sprites/boss.plist");
 
-	
 	fishSprite = CCSprite::createWithSpriteFrame(cache->getSpriteFrameByName("or1.png"));
 	fishSprite->setName("RBOSS");
 	 
-	
 	Vector<SpriteFrame*> animFrames(2);
 
 	auto fnameStr = "or%i.png";
@@ -186,6 +185,7 @@ void Ross::shootProjectiles(Vec2 position) {
 }
 
 void Ross::projectilesSequence(Size visibleSize, Vec2 origin) {
+	CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("sounds/bubbles.wav");
 	shootProjectiles(Vec2(-1, -1));
 	shootProjectiles(Vec2(visibleSize.width, -1));
 	shootProjectiles(Vec2(visibleSize.width / 3, -1));

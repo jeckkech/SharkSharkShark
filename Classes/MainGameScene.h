@@ -12,13 +12,16 @@ class MainGame : public cocos2d::Layer
 {
 public:
     static cocos2d::Scene* createScene();
+	static cocos2d::Scene* createSceneInfinite();
 	static cocos2d::Vec2 playerPosition;
-	
+	static int mode;
+
     virtual bool init();
     
     // a selector callback
-    void menuCloseCallback(cocos2d::Ref* pSender);
-	void repeatCallback(cocos2d::Ref* pSender);
+    void menuCloseCallback(cocos2d::Ref* pSender, cocos2d::ui::Widget::TouchEventType type);
+	void repeatCallback(cocos2d::Ref* pSender, cocos2d::ui::Widget::TouchEventType type);
+	void continueCallback(cocos2d::Ref* pSender, cocos2d::ui::Widget::TouchEventType type);
 	void biteCallback(cocos2d::Ref* pSender, cocos2d::ui::Widget::TouchEventType type);
 	void blinkNotification(std::string str);
 	void staticNotification(std::string str);
@@ -35,10 +38,15 @@ private:
 	cocos2d::PhysicsWorld *sceneWorld;
 	
 	int totalScore = 0;
+	int bossLimit = 60;
 	bool hwStage1 = false;
 	bool stage1 = false;
 	bool hwStage2 = false;
 	bool stage2 = false;
+	bool hwStage3 = false;
+	bool hwStage4 = false;
+	bool hwStage5 = false;
+	bool hwStage7_5 = false;
 	bool hwStage8 = false;
 	bool isGameOver = false;
 	bool isBiteMode = false;
@@ -57,8 +65,8 @@ private:
 	void gameOver();
 	void endingSequence1();
 	void endingSequence2();
-	void exit(cocos2d::Ref* pSender);
-	void resume(cocos2d::Ref* pSender);
+	void exit(cocos2d::Ref* pSender, cocos2d::ui::Widget::TouchEventType type);
+	void resume(cocos2d::Ref* pSender, cocos2d::ui::Widget::TouchEventType type);
 
 	void createScoreLabel(int points, cocos2d::Vec2 position);
 	cocos2d::EventListenerTouchOneByOne* playerTouchListener;

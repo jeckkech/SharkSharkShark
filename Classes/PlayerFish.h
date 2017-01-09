@@ -12,15 +12,17 @@ public:
 	void createFish(int fishId);
 	void increaseScore(float pts);
 	void increaseScale();
+	void blink();
 	void refreshPlayerDirection(int posX);
 	int getScore();
+	bool isBlinking();
 private:
 	float fScale;
 	float score = 0.0;
 	int currentStage;
 	int direction = 0;
+	bool blinking = false;
 	void evolve();
-
 };
 
 #endif // __PLAYERFISH_H__

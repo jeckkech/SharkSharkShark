@@ -12,7 +12,7 @@ public:
 	virtual bool init();
 
 	// a selector callback
-	void backCallback(cocos2d::Ref* pSender);
+	void backCallback(cocos2d::Ref* pSender, cocos2d::ui::Widget::TouchEventType type);
 	// implement the "static create()" method manually
 	CREATE_FUNC(Options);
 private: 

@@ -2,6 +2,7 @@
 #include "ui/CocosGUI.h"
 #include "OptionsScene.h"
 #include "MainMenuScene.h"
+#include "SimpleAudioEngine.h"
 
 USING_NS_CC;
 using namespace cocostudio::timeline;
@@ -46,7 +47,7 @@ bool Options::init()
 	background->getTexture()->setAliasTexParameters();
 	CCSprite::create(backButton->getNormalFile().file)->getTexture()->setAliasTexParameters();
 	
-	backButton->addTouchEventListener(CC_CALLBACK_1(Options::backCallback, this));
+	backButton->addTouchEventListener(CC_CALLBACK_2(Options::backCallback, this));
 
 	node->setAnchorPoint(Point(0, 0));
 	node->setPosition(origin.x, origin.y);
@@ -60,11 +61,14 @@ bool Options::init()
 	return true;
 }
 
-void Options::backCallback(Ref* pSender)
+void Options::backCallback(Ref* pSender, Widget::TouchEventType type)
 {
-	static_cast<cocos2d::ui::PageView*>(this->getChildByName("OptionsPage")->getChildByName("optionsPage"))->setClippingEnabled(false);
-	auto scene = MainMenu::createScene();
-	Director::getInstance()->replaceScene(TransitionFadeDown::create(0.5, scene));
+	if(type == Widget::TouchEventType::BEGAN){
+		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("sounds/exit.wav");
+		static_cast<cocos2d::ui::PageView*>(this->getChildByName("OptionsPage")->getChildByName("optionsPage"))->setClippingEnabled(false);
+		auto scene = MainMenu::createScene();
+		Director::getInstance()->replaceScene(TransitionFadeDown::create(0.5, scene));
+	}
 }
 
 void Options::unlockElements()

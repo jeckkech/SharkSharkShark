@@ -12,9 +12,10 @@ public:
 	virtual bool init();
 
 	// a selector callback
-	void exitCallback(cocos2d::Ref* pSender);
-	void startCallback(cocos2d::Ref* pSender);
-	void galleryCallback(cocos2d::Ref* pSender);
+	void exitCallback(cocos2d::Ref* pSender, cocos2d::ui::Widget::TouchEventType type);
+	void startCallback(cocos2d::Ref* pSender, cocos2d::ui::Widget::TouchEventType type);
+	void startInfiniteCallback(cocos2d::Ref* pSender, cocos2d::ui::Widget::TouchEventType type);
+	void galleryCallback(cocos2d::Ref* pSender, cocos2d::ui::Widget::TouchEventType type);
 	void muteCallback(Ref* pSender, cocos2d::ui::CheckBox::EventType type);
 	// implement the "static create()" method manually
 	CREATE_FUNC(MainMenu);

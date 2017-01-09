@@ -25,7 +25,8 @@ LOCAL_SRC_FILES := hellocpp/main.cpp \
 				   ../../Classes/MainMenuScene.cpp \
 				   ../../Classes/OptionsScene.cpp \
 				   ../../Classes/Ross.cpp \
-				   ../../Classes/Bubble.cpp
+				   ../../Classes/Bubble.cpp \
+				   ../../Classes/SplashScene.cpp
 
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/../../Classes
 

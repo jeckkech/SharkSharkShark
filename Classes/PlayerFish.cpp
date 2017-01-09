@@ -1,4 +1,5 @@
 #include "PlayerFish.h"
+#include "SimpleAudioEngine.h"
 
 USING_NS_CC;
 void PlayerFish::createFish(int fishId) {
@@ -75,14 +76,14 @@ void PlayerFish::refreshPlayerDirection(int posX) {
 
 void PlayerFish::evolve() {
 
-	int stage = std::floor((score - 1) / 10);
+	int stage = std::floor((score - 1.0f) / 10);
 	if (stage > currentStage && stage <= 6) {
 		//currentStage = stage;
 		this->removeAllChildrenWithCleanup(true);
 		this->drawFish(stage);
-		ActionInterval *blink = CCBlink::create(2, 10);
-		this->runAction(blink);
+		blink();
 		UserDefault::getInstance()->setIntegerForKey("playerStage", stage);
+		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("sounds/evolve.wav");
 	}
 }
 
@@ -126,7 +127,17 @@ void PlayerFish::increaseScore(float pts) {
 	score += pts;
 	this->evolve();
 }
-
+void PlayerFish::blink() {
+	ActionInterval *blink = CCBlink::create(2, 10);
+	this->runAction(Sequence::create(CallFunc::create([this]() {
+		blinking = true;
+	}), blink, CallFunc::create([this]() {
+		blinking = false;
+	}), nullptr));
+}
+bool PlayerFish::isBlinking() {
+	return blinking;
+}
 int PlayerFish::getScore() {
 	return score;
 }
