@@ -72,17 +72,28 @@ bool MainGame::init()
 	parallaxBg2->getTexture()->setAliasTexParameters();
 
 	parallaxBg = CCSprite::create("bg3.png");
-	parallaxBg->setAnchorPoint(Point(0, 0));
-	parallaxBg->setPosition(Point(origin.x, origin.y));
+	parallaxBg->setAnchorPoint(Point(parallaxBg->getAnchorPoint().x, 0));
+	parallaxBg->setPosition(Point(visibleSize.width/2 + origin.x, origin.y));
 	parallaxBg->getTexture()->setAliasTexParameters();
 
-	float bgScale2 = visibleSize.width / parallaxBg2->getContentSize().width;
-
-	parallaxBg2->setScale(bgScale2);
+	parallaxBg2->setScale(visibleSize.width / parallaxBg2->getContentSize().width);
 	this->addChild(parallaxBg2, 2);
 
-	parallaxBg->setScale(bgScale2);
+	parallaxBg->setScale(visibleSize.height / parallaxBg->getContentSize().height);
 	this->addChild(parallaxBg, 3);
+
+	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("sounds/player_death.wav");
+	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("sounds/lifebar.wav");
+	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("sounds/beep.wav");
+	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("sounds/boop.wav");
+	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("sounds/swim.wav");
+	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("sounds/eat_fish.wav");
+	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("sounds/fishes_collide.wav");
+	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("sounds/select.wav");
+	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("sounds/bite.wav");
+	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("sounds/ross_hurt.wav");
+	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("sounds/boss_appear.wav");
+	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("sounds/exit.wav");
 
 	auto node = CSLoader::createNode("scenes/HUDElements.csb");
 	
@@ -101,15 +112,19 @@ bool MainGame::init()
 
 	auto biteButton = static_cast<cocos2d::ui::Button*>(panel->getChildByName("biteActionPanel")->getChildByName("biteButton"));
 	auto biteIcon = static_cast<Node*>(panel->getChildByName("biteActionPanel")->getChildByName("biteIconAnimation"));
+	auto biteLabel = static_cast<Node*>(panel->getChildByName("biteActionPanel")->getChildByName("biteLabel"));
+
 	biteButton->addTouchEventListener(CC_CALLBACK_2(MainGame::biteCallback, this));
 
-	Sprite::create("res/buttons/biteBtn1.png")->getTexture()->setAliasTexParameters();
-	Sprite::create("res/buttons/biteBtn2.png")->getTexture()->setAliasTexParameters();
+	Sprite::create("res/buttons/bite1.png")->getTexture()->setAliasTexParameters();
+	Sprite::create("res/buttons/bite2.png")->getTexture()->setAliasTexParameters();
+	Sprite::create("res/buttons/bite3.png")->getTexture()->setAliasTexParameters();
 
 	auto biteButtonTimeline = (cocostudio::timeline::ActionTimeline*)biteIcon->getActionByTag(biteIcon->getTag());
-	biteButtonTimeline->setTimeSpeed(0.06f);
+	biteButtonTimeline->setTimeSpeed(0.04f);
 	biteButtonTimeline->gotoFrameAndPlay(0);
 	biteIcon->runAction(biteButtonTimeline);
+	biteLabel->runAction(RepeatForever::create(Blink::create(1.0f, 2)));
 
 	Sprite::create("res/hud/lifebar.png")->getTexture()->setAliasTexParameters();
 
@@ -226,10 +241,20 @@ void MainGame::onEnterTransitionDidFinish() {
 		}), DelayTime::create(2.0),
 		CallFunc::create([this, countdownPanel]() {
 		countdownPanel->setVisible(false);
+		achievementUnlocked();
 		isInCountdown = false;
 		}),nullptr));
 }
 
+void MainGame::achievementUnlocked() {
+	auto achievementPanel = this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel")->getChildByName("achievementPanel");
+	achievementPanel->setVisible(true);
+	achievementPanel->runAction(Sequence::create(MoveTo::create(1.0f, Vec2(0, 0)),
+		DelayTime::create(1.0f), MoveTo::create(1.0f, Vec2(0, -achievementPanel->getContentSize().height)),
+		CallFunc::create([achievementPanel]() {
+		achievementPanel->setVisible(false); }),
+		nullptr));
+}
 void MainGame::blinkNotification(std::string str) {
 	auto countdownPanel = this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel")->getChildByName("countdown");
 	auto countdownLabel = static_cast<cocos2d::ui::Text*>(countdownPanel->getChildByName("countdownLabel"));
@@ -270,6 +295,9 @@ void MainGame::setUpInitial(){
 	this->addChild(fish6, 2);
 	fish6->drawFish(2);
 
+	if (UserDefault::getInstance()->getIntegerForKey("fishStage") < 2) {
+		achievementUnlocked();
+	}
 	UserDefault::getInstance()->setIntegerForKey("fishStage", 2);
 
 	playerTouchListener = EventListenerTouchOneByOne::create();
@@ -280,6 +308,11 @@ void MainGame::setUpInitial(){
 	this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(playerTouchListener, this);
 }
 void MainGame::update(float dt) {
+
+	if (PlayerFish::needsNotification) {
+		achievementUnlocked();
+		PlayerFish::needsNotification = false;
+	}
 	MainGame::playerPosition = Vec2(playerFish->getPositionX(), playerFish->getPositionY());
 	auto origin = Director::getInstance()->getVisibleOrigin();
 	auto visibleSize = Director::getInstance()->getVisibleSize();
@@ -289,7 +322,7 @@ void MainGame::update(float dt) {
 	
 	float bgMargin = visibleSize.width / 2 - playerFishPos + origin.x;
 	
-	parallaxBg->setPositionX(origin.x + bgMargin/2);
+	parallaxBg->setPositionX(origin.x + visibleSize.width/2 + bgMargin/2);
 	parallaxBg2->setPositionX(origin.x + bgMargin / 5);
 
 	if(MainGame::mode == 0){
@@ -304,6 +337,9 @@ void MainGame::update(float dt) {
 			this->addChild(fish6, 2);
 			fish6->drawFish(2);
 
+			if (UserDefault::getInstance()->getIntegerForKey("cancerStage") < 1) {
+				achievementUnlocked();
+			}
 			UserDefault::getInstance()->setIntegerForKey("cancerStage", 1);
 		}
 		if (totalScore >= 750 && !hwStage7_5) {
@@ -315,6 +351,9 @@ void MainGame::update(float dt) {
 			shark->setName("sharkNode");
 			this->addChild(shark, 2);
 			shark->drawFish();
+			if (UserDefault::getInstance()->getIntegerForKey("sharkStage") < 1) {
+				achievementUnlocked();
+			}
 			UserDefault::getInstance()->setIntegerForKey("sharkStage", 1);
 		}
 		if (totalScore >= 1000 && !stage1) {
@@ -326,6 +365,9 @@ void MainGame::update(float dt) {
 		
 			++topStage;
 		
+			if (UserDefault::getInstance()->getIntegerForKey("fishStage") < topStage) {
+				achievementUnlocked();
+			}
 			UserDefault::getInstance()->setIntegerForKey("fishStage", topStage);
 		}
 
@@ -336,8 +378,14 @@ void MainGame::update(float dt) {
 			fish6->drawFish(4);
 			++topStage;
 	
+			if (UserDefault::getInstance()->getIntegerForKey("fishStage") < topStage || 
+				UserDefault::getInstance()->getIntegerForKey("jellyFishStage") < 1) {
+				achievementUnlocked();
+			}
+
 			UserDefault::getInstance()->setIntegerForKey("fishStage", topStage);
 			UserDefault::getInstance()->setIntegerForKey("jellyFishStage", 1);
+
 
 			JellyFish* jf = JellyFish::create();
 			this->addChild(jf, 2);
@@ -352,11 +400,16 @@ void MainGame::update(float dt) {
 			fish6->drawFish(5);
 			++topStage;
 
+			if (UserDefault::getInstance()->getIntegerForKey("fishStage") < topStage
+				|| UserDefault::getInstance()->getIntegerForKey("cancerStage") < 2) {
+				achievementUnlocked();
+			}
 			UserDefault::getInstance()->setIntegerForKey("fishStage", topStage);
 
 			Cancer* cancer2 = Cancer::create();
 			this->addChild(cancer2, 2);
 			cancer2->drawFish(2);
+
 			UserDefault::getInstance()->setIntegerForKey("cancerStage", 2);
 		}
 
@@ -511,7 +564,7 @@ bool MainGame::onContactBegin(cocos2d::PhysicsContact &contact) {
 					userCollided = true;
 				}
 				if (collisionBitmaskA != 0x09 && bodyA->getCollisionBitmask() != 0x06) {
-					node1->increaseScore(1.0);
+					node1->increaseScore(1.0f);
 					node1->increaseScale();
 				}
 
@@ -527,7 +580,7 @@ bool MainGame::onContactBegin(cocos2d::PhysicsContact &contact) {
 				}
 				else {
 					node2->kill(userCollided);
-					if (!userCollided) {
+					if (collisionBitmaskA != 0x09 && collisionBitmaskB != 0x09) {
 						CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("sounds/fishes_collide.wav");
 					}
 				}
@@ -536,13 +589,13 @@ bool MainGame::onContactBegin(cocos2d::PhysicsContact &contact) {
 				if (collisionBitmaskB == 0x09) {
 					if (collisionBitmaskA == 0x08) {
 						setScore(200);
-						((PlayerFish*)bodyB->getNode())->increaseScore(2.0);
+						((PlayerFish*)bodyB->getNode())->increaseScore(2.0f);
 						CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("sounds/eat_fish.wav");
 						createScoreLabel(200, bodyA->getNode()->getPosition());
 					}
 					else {
 						setScore(100);
-						((PlayerFish*)bodyB->getNode())->increaseScore(1.0);
+						((PlayerFish*)bodyB->getNode())->increaseScore(1.0f);
 						CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("sounds/eat_fish.wav");
 						createScoreLabel(100, bodyA->getNode()->getPosition());
 					}
@@ -553,7 +606,7 @@ bool MainGame::onContactBegin(cocos2d::PhysicsContact &contact) {
 					userCollided = true;
 				}
 				if (collisionBitmaskB != 0x09 && bodyB->getCollisionBitmask() != 0x06) {
-					node2->increaseScore(1.0);
+					node2->increaseScore(1.0f);
 					node2->increaseScale();
 				}
 				position = node1->getPosition();
@@ -567,7 +620,7 @@ bool MainGame::onContactBegin(cocos2d::PhysicsContact &contact) {
 				}
 				else {
 					node1->kill(userCollided);
-					if (!userCollided) {
+					if (collisionBitmaskA != 0x09 && collisionBitmaskB != 0x09) {
 						CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("sounds/fishes_collide.wav");
 					}
 				}
@@ -581,6 +634,9 @@ bool MainGame::onContactBegin(cocos2d::PhysicsContact &contact) {
 				SeaHorse* sh = SeaHorse::create();
 				this->addChild(sh, 2);
 				sh->drawFish(1);
+				if (UserDefault::getInstance()->getIntegerForKey("seaHorseStage") < 1) {
+					achievementUnlocked();
+				}
 				UserDefault::getInstance()->setIntegerForKey("seaHorseStage", 1);
 			}
 			else {
@@ -760,6 +816,9 @@ void MainGame::endingSequence1() {
 			ross->drawFish();
 			CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("sounds/boss_appear.wav");
 			bossLimit = 70;
+			if (UserDefault::getInstance()->getIntegerForKey("rossStage") < 1) {
+				achievementUnlocked();
+			}
 			UserDefault::getInstance()->setIntegerForKey("rossStage", 1);
 		}), nullptr
 		));

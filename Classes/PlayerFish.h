@@ -6,6 +6,7 @@
 class PlayerFish : public cocos2d::SpriteBatchNode
 {
 public:
+	static bool needsNotification;
 	static PlayerFish* create(const std::string &path, ssize_t capacity);
 	static PlayerFish* create();
 	void drawFish(int fishId);

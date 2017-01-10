@@ -23,6 +23,7 @@ public:
 	void repeatCallback(cocos2d::Ref* pSender, cocos2d::ui::Widget::TouchEventType type);
 	void continueCallback(cocos2d::Ref* pSender, cocos2d::ui::Widget::TouchEventType type);
 	void biteCallback(cocos2d::Ref* pSender, cocos2d::ui::Widget::TouchEventType type);
+	void achievementUnlocked();
 	void blinkNotification(std::string str);
 	void staticNotification(std::string str);
 	void update(float) override;
@@ -53,7 +54,7 @@ private:
 	
 	bool isInCountdown = false;
 	int topStage = 2;
-
+	int lastPlayerStage = 2;
 	cocos2d::ui::Text *scoreLabel;
 	cocos2d::Sprite *parallaxBg;
 	cocos2d::Sprite *parallaxBg2;

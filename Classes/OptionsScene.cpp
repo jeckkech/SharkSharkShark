@@ -91,7 +91,9 @@ void Options::unlockElements()
 
 			char imgName[10] = { 0 };
 			sprintf(imgName, "img%i", o);
-
+			if (o >= 4) {
+				static_cast<Text*>(panel0->getChildByName("description"))->setString("you.\nit's all you.\nthere's something\ngrumpy about\nthese guys...");
+			}
 			panel0->getChildByName(lockName)->setVisible(false);
 			static_cast<Sprite*>(panel0->getChildByName(imgName))->getTexture()->setAliasTexParameters();
 			panel0->getChildByName(imgName)->setColor(Color3B(225, 225, 225));
@@ -158,7 +160,7 @@ void Options::unlockElements()
 		panel7->getChildByName("lock1")->setVisible(false);
 		panel7->getChildByName("img1")->setColor(Color3B(225, 225, 225));
 		static_cast<Sprite*>(panel7->getChildByName("img1"))->getTexture()->setAliasTexParameters();
-		static_cast<Text*>(panel7->getChildByName("description"))->setString("This guy looks tough\nbut he's got a\nweak spot on\nits tail.\nBut you have to be\ntough to do it.");
+		static_cast<Text*>(panel7->getChildByName("description"))->setString("This guy looks tough\nbut he's got a\nweak spot on\nits tail.\nYou have to be\nstrong to do it.");
 	} 
 	if (UserDefault::getInstance()->getIntegerForKey("rossStage") == 1) {
 		panel8->getChildByName("lock1")->setVisible(false);

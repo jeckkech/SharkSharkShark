@@ -33,6 +33,9 @@ bool MainMenu::init()
 	}
 	auto visibleSize = Director::getInstance()->getVisibleSize();
 	Vec2 origin = Director::getInstance()->getVisibleOrigin();
+
+	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("sounds/exit.wav");
+	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("sounds/select.wav");
 	UserDefault *def = UserDefault::getInstance();
 
 	auto node = CSLoader::createNode("scenes/MainMenu.csb");

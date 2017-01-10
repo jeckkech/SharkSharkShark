@@ -15,7 +15,7 @@ Scene* SplashScene::createScene()
 
     // add layer as a child to scene
     scene->addChild(layer);
-
+	scene->setName("SplashScene");
     // return the scene
     return scene;
 }

@@ -1,8 +1,11 @@
 #include "PlayerFish.h"
 #include "SimpleAudioEngine.h"
+#include "MainGameScene.h"
 
 USING_NS_CC;
+bool PlayerFish::needsNotification = false;
 void PlayerFish::createFish(int fishId) {
+	CocosDenshion::SimpleAudioEngine::getInstance()->preloadEffect("sounds/evolve.wav");
 	Size visibleSize = Director::getInstance()->getVisibleSize();
 	Vec2 origin = Director::getInstance()->getVisibleOrigin();
 	
@@ -25,7 +28,7 @@ void PlayerFish::createFish(int fishId) {
 }
 void PlayerFish::drawFish(int fishId) {
 	currentStage = fishId;
-	score = fishId * 10 + 1;
+	score = fishId * 10.0f + 1.0f;
 	Size visibleSize = Director::getInstance()->getVisibleSize();
 	Vec2 origin = Director::getInstance()->getVisibleOrigin();
 	SpriteFrameCache* cache = SpriteFrameCache::getInstance();
@@ -36,7 +39,18 @@ void PlayerFish::drawFish(int fishId) {
 	auto fnameStr = "mf%i%i.png";
 	if (currentStage == 6 && cocos2d::rand_minus1_1() > 0) {
 		fnameStr = "mf_%i%i.png";
+		
+		if (UserDefault::getInstance()->getIntegerForKey("playerStageFinal") < 1) {
+			PlayerFish::needsNotification = true;
+		}
 		UserDefault::getInstance()->setIntegerForKey("playerStageFinal", 1);
+	}
+	else if (currentStage == 6) {
+
+		if (UserDefault::getInstance()->getIntegerForKey("playerStageFinal_") < 1) {
+			PlayerFish::needsNotification = true;
+		}
+		UserDefault::getInstance()->setIntegerForKey("playerStageFinal_", 1);
 	}
 	for (int i = 1; i <= 2; i++) {
 		char str[100] = { 0 };
@@ -82,27 +96,32 @@ void PlayerFish::evolve() {
 		this->removeAllChildrenWithCleanup(true);
 		this->drawFish(stage);
 		blink();
+		if (UserDefault::getInstance()->getIntegerForKey("playerStage") < stage) {
+			PlayerFish::needsNotification = true;
+		}
 		UserDefault::getInstance()->setIntegerForKey("playerStage", stage);
 		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("sounds/evolve.wav");
 	}
 }
 
 void PlayerFish::increaseScale() {
-	fScale += 0.1;
-	float scaleX = this->getScaleX();
-	if (scaleX > 0) {
-		scaleX += 0.1;
+	if (score <= 4 + currentStage * 10) {
+		fScale += 0.1;
+		float scaleX = this->getScaleX();
+		if (scaleX > 0) {
+			scaleX += 0.1;
+		}
+		else {
+			scaleX -= 0.1;
+		}
+		if (direction = 1) {
+			this->setScaleX(-scaleX);
+		}
+		else {
+			this->setScale(scaleX);
+		}
+		this->setScaleY(fScale);
 	}
-	else {
-		scaleX -= 0.1;
-	}
-	if(direction = 1){
-		this->setScaleX(-scaleX);
-	}
-	else {
-		this->setScale(scaleX);
-	}
-	this->setScaleY(fScale);
 }
 
 PlayerFish* PlayerFish::create(const std::string &path, ssize_t capacity)
@@ -125,7 +144,7 @@ PlayerFish* PlayerFish::create() {
 
 void PlayerFish::increaseScore(float pts) {
 	score += pts;
-	this->evolve();
+	evolve();
 }
 void PlayerFish::blink() {
 	ActionInterval *blink = CCBlink::create(2, 10);
