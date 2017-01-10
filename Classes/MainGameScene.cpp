@@ -241,7 +241,6 @@ void MainGame::onEnterTransitionDidFinish() {
 		}), DelayTime::create(2.0),
 		CallFunc::create([this, countdownPanel]() {
 		countdownPanel->setVisible(false);
-		achievementUnlocked();
 		isInCountdown = false;
 		}),nullptr));
 }
