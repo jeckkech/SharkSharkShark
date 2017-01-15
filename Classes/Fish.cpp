@@ -109,7 +109,11 @@ void Fish::drawFish(int fishId) {
 	this->setScale(fScale);
 	//this->setPosition(Point(positionX, positionY));
 
-	auto physicsBody = PhysicsBody::createBox(fishSprite->getContentSize());
+	char str[100] = { 0 };
+	sprintf(str, "f%i%i.png", fishId, 1);
+	auto spr = CCSprite::createWithSpriteFrame(cache->getSpriteFrameByName(str));
+
+	auto physicsBody = PhysicsBody::createBox(spr->getContentSize());
 	physicsBody->setDynamic(false);
 	physicsBody->setCategoryBitmask(0x02);  
 	physicsBody->setCollisionBitmask(0x01);

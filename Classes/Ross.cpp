@@ -90,7 +90,7 @@ void Ross::switchMode(bool isAngry) {
 	Size visibleSize = Director::getInstance()->getVisibleSize();
 	Vec2 origin = Director::getInstance()->getVisibleOrigin();
 	SpriteFrameCache* cache = SpriteFrameCache::getInstance();
-	cache->addSpriteFramesWithFile("sprites/boss.plist");
+	cache->addSpriteFramesWithFile("sprites/sp_main.plist");
 
 	fishSprite = CCSprite::createWithSpriteFrame(cache->getSpriteFrameByName("or1.png"));
 	fishSprite->setName("RBOSS");
@@ -146,6 +146,7 @@ void Ross::kill() {
 	Size visibleSize = Director::getInstance()->getVisibleSize();
 	Vec2 origin = Director::getInstance()->getVisibleOrigin();
 	SpriteFrameCache* cache = SpriteFrameCache::getInstance();
+	
 	cache->addSpriteFramesWithFile("sprites/sp_main.plist");
 	auto klSprite = CCSprite::createWithSpriteFrame(cache->getSpriteFrameByName("kl1.png"));
 	Vector<SpriteFrame*> animFrames(8);
@@ -161,13 +162,13 @@ void Ross::kill() {
 	auto animation = Animation::createWithSpriteFrames(animFrames, 0.1f);
 
 	this->addChild(klSprite);
-	klSprite->runAction(Sequence::create(Animate::create(animation), CallFunc::create([this]() {
+	klSprite->runAction(Sequence::create(Animate::create(animation), Animate::create(animation), Animate::create(animation), CallFunc::create([this]() {
 		this->removeFromParentAndCleanup(true);
 	}), nullptr));
 }
 
 Ross* Ross::create() {
-	return Ross::create("sprites/boss.png", 29L);
+	return Ross::create("sprites/sp_main.png", 29L);
 }
 
 void Ross::decreaseHealth() {

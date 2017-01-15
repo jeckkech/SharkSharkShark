@@ -101,7 +101,8 @@ void SeaHorse::drawFish(int fishId) {
 
 	this->setScale(fScale);
 	this->setPosition(positionX, positionY);
-	auto physicsBody = PhysicsBody::createBox(fishSprite->getContentSize());
+	auto physicsBody = PhysicsBody::createBox(CCSprite::createWithSpriteFrame(
+		cache->getSpriteFrameByName("sh11.png"))->getContentSize());
 	physicsBody->setDynamic(false);
 	physicsBody->setCategoryBitmask(0x02);
 	physicsBody->setCollisionBitmask(0x08);

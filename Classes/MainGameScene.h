@@ -15,10 +15,9 @@ public:
 	static cocos2d::Scene* createSceneInfinite();
 	static cocos2d::Vec2 playerPosition;
 	static int mode;
-
-    virtual bool init();
-    
+	virtual bool init();
     // a selector callback
+	void updateTimer(float dt);
     void menuCloseCallback(cocos2d::Ref* pSender, cocos2d::ui::Widget::TouchEventType type);
 	void repeatCallback(cocos2d::Ref* pSender, cocos2d::ui::Widget::TouchEventType type);
 	void continueCallback(cocos2d::Ref* pSender, cocos2d::ui::Widget::TouchEventType type);
@@ -51,7 +50,11 @@ private:
 	bool hwStage8 = false;
 	bool isGameOver = false;
 	bool isBiteMode = false;
-	
+	bool isAchievementShowing = false;
+	bool isInNotification = false;
+	bool hiScoreNotified = false;
+	bool timerUpdated = false;
+
 	bool isInCountdown = false;
 	int topStage = 2;
 	int lastPlayerStage = 2;
@@ -75,6 +78,7 @@ private:
 	bool onContactBegin(cocos2d::PhysicsContact &contact);
 	bool onContactSeparate(cocos2d::PhysicsContact &contact);
 	bool onTouchMove(cocos2d::Touch *touch, cocos2d::Event *event);
+	bool onTouch(cocos2d::Touch *touch, cocos2d::Event *event);
 	bool onTouchStop(cocos2d::Touch *touch, cocos2d::Event *event);
 	PlayerFish* playerFish;
 	Shark* shark;

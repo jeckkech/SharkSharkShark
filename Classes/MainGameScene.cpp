@@ -1,6 +1,7 @@
 #include "SimpleAudioEngine.h"
 #include "MainGameScene.h"
 #include "MainMenuScene.h"
+#include "AdBuddizHelper.h"
 #include "Fish.h"
 #include "SeaHorse.h"
 #include "Cancer.h"
@@ -19,6 +20,7 @@ using namespace cocos2d::ui;
 
 cocos2d::Vec2 MainGame::playerPosition;
 int MainGame::mode;
+
 Scene* MainGame::createScene()
 {
 	// 'scene' is an autorelease object
@@ -160,6 +162,7 @@ bool MainGame::init()
 
 	scoreLabel = static_cast<cocos2d::ui::Text*>(panel->getChildByName("scoreLabel"));
 
+
 	ui::Helper::doLayout(node);
 	this->addChild(node, 5);
 
@@ -246,13 +249,18 @@ void MainGame::onEnterTransitionDidFinish() {
 }
 
 void MainGame::achievementUnlocked() {
-	auto achievementPanel = this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel")->getChildByName("achievementPanel");
-	achievementPanel->setVisible(true);
-	achievementPanel->runAction(Sequence::create(MoveTo::create(1.0f, Vec2(0, 0)),
-		DelayTime::create(1.0f), MoveTo::create(1.0f, Vec2(0, -achievementPanel->getContentSize().height)),
-		CallFunc::create([achievementPanel]() {
-		achievementPanel->setVisible(false); }),
-		nullptr));
+	if(!isAchievementShowing){
+		isAchievementShowing = true;
+		auto achievementPanel = this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel")->getChildByName("achievementPanel");
+		achievementPanel->setVisible(true);
+		achievementPanel->runAction(Sequence::create(MoveTo::create(1.0f, Vec2(0, 0)),
+			DelayTime::create(1.0f), MoveTo::create(1.0f, Vec2(0, -achievementPanel->getContentSize().height)),
+			CallFunc::create([achievementPanel, this]() {
+			achievementPanel->setVisible(false);
+			isAchievementShowing = false;
+			}),
+			nullptr));
+	}
 }
 void MainGame::blinkNotification(std::string str) {
 	auto countdownPanel = this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel")->getChildByName("countdown");
@@ -302,16 +310,11 @@ void MainGame::setUpInitial(){
 	playerTouchListener = EventListenerTouchOneByOne::create();
 	playerTouchListener->setSwallowTouches(true);
 	playerTouchListener->onTouchBegan = CC_CALLBACK_2(MainGame::onTouchMove, this);
-	playerTouchListener->onTouchMoved = CC_CALLBACK_2(MainGame::onTouchStop, this);
+	playerTouchListener->onTouchMoved = CC_CALLBACK_2(MainGame::onTouch, this);
 	playerTouchListener->onTouchEnded = CC_CALLBACK_2(MainGame::onTouchStop, this);
 	this->getEventDispatcher()->addEventListenerWithSceneGraphPriority(playerTouchListener, this);
 }
 void MainGame::update(float dt) {
-
-	if (PlayerFish::needsNotification) {
-		achievementUnlocked();
-		PlayerFish::needsNotification = false;
-	}
 	MainGame::playerPosition = Vec2(playerFish->getPositionX(), playerFish->getPositionY());
 	auto origin = Director::getInstance()->getVisibleOrigin();
 	auto visibleSize = Director::getInstance()->getVisibleSize();
@@ -414,13 +417,19 @@ void MainGame::update(float dt) {
 
 		if (totalScore >= 4000 && !hwStage4) {
 			hwStage4 = true;
+			achievementUnlocked();
 		}
 
 		if (totalScore >= 5000 && !hwStage5) {
 			hwStage5 = true;
+			if(!UserDefault::getInstance()->getBoolForKey("playerStageFinal") || 
+				!UserDefault::getInstance()->getBoolForKey("playerStageFinal_")){
+				achievementUnlocked();
+			}
 		}
 	}
 	else if (MainGame::mode == 1) {
+		topStage = 5;
 		if (totalScore >= 500 && !hwStage1) {
 			hwStage1 = true;
 
@@ -431,7 +440,6 @@ void MainGame::update(float dt) {
 			Fish* fish6 = Fish::create();
 			this->addChild(fish6, 2);
 			fish6->drawFish(3);
-			UserDefault::getInstance()->setIntegerForKey("fishStage", 3);
 		}
 		if (totalScore >= 1000 && !stage1) {
 			stage1 = true;
@@ -439,8 +447,6 @@ void MainGame::update(float dt) {
 			Fish* fish6 = Fish::create();
 			this->addChild(fish6, 2);
 			fish6->drawFish(4);
-
-			UserDefault::getInstance()->setIntegerForKey("fishStage", 4);
 		}
 
 		if (totalScore >= 2000 && !hwStage2) {
@@ -448,9 +454,6 @@ void MainGame::update(float dt) {
 			Fish* fish6 = Fish::create();
 			this->addChild(fish6, 2);
 			fish6->drawFish(5);
-
-			UserDefault::getInstance()->setIntegerForKey("fishStage", 5);
-			UserDefault::getInstance()->setIntegerForKey("jellyFishStage", 1);
 
 			JellyFish* jf = JellyFish::create();
 			this->addChild(jf, 2);
@@ -467,23 +470,75 @@ void MainGame::update(float dt) {
 			Cancer* cancer2 = Cancer::create();
 			this->addChild(cancer2, 2);
 			cancer2->drawFish(2);
-			UserDefault::getInstance()->setIntegerForKey("cancerStage", 2);
+		}
+
+		if (totalScore >= 4000 && !hwStage4) {
+			hwStage4 = true;
+			JellyFish* jf = JellyFish::create();
+			this->addChild(jf, 2);
+			jf->drawFish(1);
+
+			Fish* fish6 = Fish::create();
+			this->addChild(fish6, 2);
+			fish6->drawFish(5);
+		}
+
+		if (totalScore >= 6000 && !hwStage5) {
+			hwStage5 = true;
+
+			Cancer* cancer2 = Cancer::create();
+			this->addChild(cancer2, 2);
+			cancer2->drawFish(2);
+		}
+
+		if (totalScore >= 8000 && !hwStage8) {
+			hwStage8 = true;
+
+			JellyFish* jf = JellyFish::create();
+			this->addChild(jf, 2);
+			jf->drawFish(1);
+
+			Fish* fish6 = Fish::create();
+			this->addChild(fish6, 2);
+			fish6->drawFish(5);
 		}
 	}
 }
 
 bool MainGame::onTouchMove(cocos2d::Touch *touch, cocos2d::Event *event) {
-	CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("sounds/swim.wav");
 	playerFish->refreshPlayerDirection(touch->getLocation().x);
 	playerFish->stopActionByTag(1444);
 	float distance = playerFish->getPosition().getDistance(touch->getLocation());
-	auto action = MoveTo::create(distance/15, touch->getLocation());
+	auto action = MoveTo::create(distance/(playerFish->getStage()+15), touch->getLocation());
 	action->setTag(1444);
 	playerFish->runAction(action);
 }
 
+bool MainGame::onTouch(cocos2d::Touch *touch, cocos2d::Event *event) {
+	if(!timerUpdated){
+		playerFish->stopActionByTag(1444);
+		playerFish->refreshPlayerDirection(touch->getLocation().x);
+		float distance = playerFish->getPosition().getDistance(touch->getLocation());
+		auto action = MoveTo::create(distance / (playerFish->getStage() + 15 + 3), touch->getLocation());
+		action->setTag(1444);
+		playerFish->runAction(action);
+		timerUpdated = true;
+		this->scheduleOnce(schedule_selector(MainGame::updateTimer), 0.1f);
+	}
+}
+
+void MainGame::updateTimer(float dt) {
+	timerUpdated = false;
+}
+
 bool MainGame::onTouchStop(cocos2d::Touch *touch, cocos2d::Event *event) {
-	//playerFish->stopActionByTag(1444);
+	CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("sounds/swim.wav");
+	playerFish->refreshPlayerDirection(touch->getLocation().x);
+	playerFish->stopActionByTag(1444);
+	float distance = playerFish->getPosition().getDistance(touch->getLocation());
+	auto action = MoveTo::create(distance / (playerFish->getStage() + 15), touch->getLocation());
+	action->setTag(1444);
+	playerFish->runAction(action);
 }
 
 bool MainGame::onContactSeparate(cocos2d::PhysicsContact &contact) {
@@ -507,7 +562,8 @@ bool MainGame::onContactBegin(cocos2d::PhysicsContact &contact) {
 	int collisionBitmaskA = contact.getShapeA()->getCollisionBitmask();
 	int collisionBitmaskB = contact.getShapeB()->getCollisionBitmask();
 	
-	if (playerFish->getScore() >= 50 && ((collisionBitmaskA == 0x15 && collisionBitmaskB == 0x09) ||
+	if (playerFish->getScore() >= 50 && 
+		((collisionBitmaskA == 0x15 && collisionBitmaskB == 0x09) ||
 		(collisionBitmaskB == 0x15 && collisionBitmaskA == 0x09))) {
 		this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel")->getChildByName("biteActionPanel")->setVisible(true);
 		isBiteMode = true;
@@ -687,6 +743,15 @@ void MainGame::createScoreLabel(int points, Vec2 position) {
 
 void MainGame::setScore(int points) {
 	totalScore = totalScore + points;
+
+	if (UserDefault::getInstance()->getIntegerForKey("hiScore") > 0 &&
+		UserDefault::getInstance()->getIntegerForKey("hiScore") < totalScore &&
+		!hiScoreNotified) {
+		hiScoreNotified = true;
+		blinkNotification("NEW\nHIGHSCORE!");
+		UserDefault::getInstance()->setIntegerForKey("hiScore", totalScore);
+	}
+
 	std::stringstream ss;
 	ss << std::setfill('0') << std::setw(7) << totalScore;
 	scoreLabel->setString(ss.str());
@@ -700,6 +765,7 @@ void MainGame::menuCloseCallback(Ref* pSender, Widget::TouchEventType type)
 		this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel")->getChildByName("gameOverPanel")->setVisible(false);
 		this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel")->getChildByName("countdown")->setVisible(false);
 		this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel")->getChildByName("biteActionPanel")->setVisible(false);
+		this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel")->getChildByName("staticNotificationPanel")->setVisible(false);
 		auto prompt = this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel")->getChildByName("exitPrompt");
 		prompt->setVisible(true);
 		Director::getInstance()->pause();
@@ -766,12 +832,15 @@ void MainGame::resume(Ref* pSender, Widget::TouchEventType type) {
 		if (isBiteMode) {
 			this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel")->getChildByName("biteActionPanel")->setVisible(true);
 		}
+		if (isInNotification) {
+			this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel")->getChildByName("staticNotificationPanel")->setVisible(true);
+		}
 	}
 }
 
 void MainGame::endingSequence1() {
 	playerContactListener->setEnabled(false);
-	this->runAction(Sequence::create(
+	this->runAction(Sequence::create(DelayTime::create(3.0),
 		CallFunc::create([this]() {
 			staticNotification("CONGRATULATIONS!");
 		}), DelayTime::create(3.0),
@@ -798,6 +867,7 @@ void MainGame::endingSequence1() {
 		}), DelayTime::create(3.0),
 			CallFunc::create([this]() {
 			this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel")->getChildByName("staticNotificationPanel")->setVisible(false);
+			isInNotification = false;
 			blinkNotification("GODDAMIT\nROSS!!");
 			Director::getInstance()->resume();
 			playerContactListener->setEnabled(true);
@@ -830,6 +900,7 @@ void MainGame::endingSequence2() {
 }
 
 void MainGame::staticNotification(std::string str) {
+	isInNotification = true;
 	auto notificationPanel = this->getChildByName("HUDElements")->getChildByName("HUDElements")->getChildByName("hudPanel")->getChildByName("staticNotificationPanel");
 	auto notificationLabel = static_cast<cocos2d::ui::Text*>(notificationPanel->getChildByName("staticNotification"));
 	notificationPanel->setVisible(true);
@@ -849,7 +920,7 @@ void MainGame::continueCallback(Ref* pSender, Widget::TouchEventType type) {
 	if (type == Widget::TouchEventType::BEGAN) {
 		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("sounds/select.wav");
 		playerFish->removeFromParentAndCleanup(true);
-
+		AdBuddizHelper::showAd();
 		playerFish = PlayerFish::create();
 		playerFish->setName("playerNode");
 		this->addChild(playerFish, 2);
@@ -862,11 +933,13 @@ void MainGame::continueCallback(Ref* pSender, Widget::TouchEventType type) {
 
 void MainGame::exit(Ref* pSender, Widget::TouchEventType type) {
 	if (type == Widget::TouchEventType::BEGAN) {
+		this->stopAllActions();
 		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("sounds/select.wav");
 		CocosDenshion::SimpleAudioEngine::getInstance()->playEffect("sounds/exit.wav");
 		saveHiScore();
 		auto scene = MainMenu::createScene();
 		Director::getInstance()->resume();
 		Director::getInstance()->replaceScene(TransitionFadeTR::create(1.0f, scene));
+		AdBuddizHelper::showAd();
 	}
 }

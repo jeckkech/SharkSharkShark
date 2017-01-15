@@ -105,13 +105,13 @@ void Options::unlockElements()
 			panel1->getChildByName("lock1")->setVisible(false);
 			panel1->getChildByName("img1")->setColor(Color3B(225, 225, 225));
 			static_cast<Sprite*>(panel1->getChildByName("img1"))->getTexture()->setAliasTexParameters();
-			static_cast<Text*>(panel1->getChildByName("description"))->setString("that's a cool fish\nnamed Arin!");
+			static_cast<Text*>(panel1->getChildByName("description"))->setString("an arinfish, one\n of the strongest\nocean creatures.");
 		}
 		else {
 			panel2->getChildByName("lock1")->setVisible(false);
 			static_cast<Sprite*>(panel2->getChildByName("img1"))->getTexture()->setAliasTexParameters();
 			panel2->getChildByName("img1")->setColor(Color3B(225, 225, 225));
-			static_cast<Text*>(panel1->getChildByName("description"))->setString("that's a curly-scaled\nDanny-fish!");
+			static_cast<Text*>(panel2->getChildByName("description"))->setString("that's a curly-scaled\nDannyfish,\one of the strongest\nand curliest\nocean creatures.");
 		}
 	}
 
@@ -140,7 +140,7 @@ void Options::unlockElements()
 			panel4->getChildByName(lockName)->setVisible(false);
 			panel4->getChildByName(imgName)->setColor(Color3B(225, 225, 225));
 			static_cast<Sprite*>(panel4->getChildByName(imgName))->getTexture()->setAliasTexParameters();
-			static_cast<Text*>(panel4->getChildByName("description"))->setString("These guys are a piece \nof a relentless crabbage.\nThey love to hang out on a \nbottom and eventually jump up.");
+			static_cast<Text*>(panel4->getChildByName("description"))->setString("These guys are a piece\nof a relentless crabbage.\nThey love to hang out on a\nbottom and eventually jump up.");
 		}
 	}
 
@@ -160,7 +160,7 @@ void Options::unlockElements()
 		panel7->getChildByName("lock1")->setVisible(false);
 		panel7->getChildByName("img1")->setColor(Color3B(225, 225, 225));
 		static_cast<Sprite*>(panel7->getChildByName("img1"))->getTexture()->setAliasTexParameters();
-		static_cast<Text*>(panel7->getChildByName("description"))->setString("This guy looks tough\nbut he's got a\nweak spot on\nits tail.\nYou have to be\nstrong to do it.");
+		static_cast<Text*>(panel7->getChildByName("description"))->setString("This guy looks tough\nbut he's got a\nweak spot on\nits tail.\nYou have to be\nstrong to deal\nwith him.");
 	} 
 	if (UserDefault::getInstance()->getIntegerForKey("rossStage") == 1) {
 		panel8->getChildByName("lock1")->setVisible(false);

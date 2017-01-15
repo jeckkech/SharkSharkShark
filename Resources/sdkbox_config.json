@@ -1,0 +1,23 @@
+{
+    "android": {
+        "iap": {
+            "items": {
+                "remove_ads": {
+                    "type": "non_consumable", 
+                    "id": "com.acidkitchen.remove_ads"
+                }
+            }, 
+            "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmh6i1u0/4Nfq0eJ+p7S3okbwSt7T+N2m59t4v+F1EyzVjaq6hfjq+nLEd47zT0orgs3xVeBEDKrRmBM9aGOrjLaSQclf1TuGtVg2EhLNG5gvRAmJW+mooKd8avaeXSkSOPHDTzigKlNiy/6RApuTImowXhD3qmfLr/yVYD6aHUYl64KBLX20CEv8if2sWY2L75VRtypOey/pKNnw28LuvhKhhQtpNrgDgurIMJVA8z1nXzCEl7p7rcEildLF2ujYT0dp2VjLq2ndHh77Rhdh+l2U0Q8uidkKoDSzSi15mH86BohLj+QplNDPLa8grhkVXowOqPcJJX9QnQ6m96axaQIDAQAB"
+        }
+    }, 
+    "ios": {
+        "iap": {
+            "items": {
+                "remove_ads": {
+                    "type": "non_consumable", 
+                    "id": "com.cocos2dx.non1"
+                }
+            }
+        }
+    }
+}
